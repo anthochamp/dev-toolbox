@@ -2,28 +2,51 @@ name: Flutter Lint
 
 on:
   workflow_call:
+    inputs:
+      working-directory:
+        description: Directory within the repository where the package is located
+        required: false
+        type: string
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94 # v1.7.0
+      - uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 #v4
 
       - name: Install dependencies
         run: flutter pub get
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Verify build_runner generated files
+        run: |
+          if flutter pub deps --executables | grep -q build_runner; then
+            flutter run build_runner build --delete-conflicting-outputs
+          fi
+          [ -z "$(git status -s)" ]
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Verify generated localization files
+        run: |
+          if grep -q 'generate: true' pubspec.yaml; then
+            flutter gen-l10n
+          fi
+          [ -z "$(git status -s)" ]
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Analyse source code
         run: flutter analyze .
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Execute code_metrics
         run: |
-          if dart pub deps --executables | grep -q ac_code_metrics; then
-            dart run ac_code_metrics:metrics analyze .
+          if flutter pub deps --executables | grep -q ac_code_metrics; then
+            flutter run ac_code_metrics:metrics analyze .
           fi
+        working-directory: ${{ inputs.working-directory }}

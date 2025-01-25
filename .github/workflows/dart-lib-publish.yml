@@ -1,0 +1,35 @@
+name: Dart Lib Publish
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment in which the workflow is required to run
+        required: false
+        type: string
+      working-directory:
+        description: Directory within the repository where the package is located
+        required: false
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # required for requesting the JWT
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94 # v1.7.0
+
+      - name: Install dependencies
+        run: dart pub get
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Publish (dry run)
+        run: dart pub publish --dry-run
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Publish to pub.dev
+        run: dart pub publish -f
+        working-directory: ${{ inputs.working-directory }}

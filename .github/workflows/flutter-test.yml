@@ -2,22 +2,27 @@ name: Flutter Test
 
 on:
   workflow_call:
+    inputs:
+      working-directory:
+        description: Directory within the repository where the package is located
+        required: false
+        type: string
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94 # v1.7.0
+      - uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 #v4
 
       - name: Install dependencies
         run: flutter pub get
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Execute tests
         run: |
           if ls -A test &>/dev/null; then
             flutter test
           fi
+        working-directory: ${{ inputs.working-directory }}
