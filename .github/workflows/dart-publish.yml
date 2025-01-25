@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # required for requesting the JWT
-      contents: read
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
