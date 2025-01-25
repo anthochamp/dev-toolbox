@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      # setup-dart action is required for setting up publish auth
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94 # v1.7.0
       - uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 #v4
 
       - name: Install dependencies
@@ -27,10 +29,9 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
 
       - name: Publish (dry run)
-        run: dart pub publish --dry-run
+        run: flutter pub publish --dry-run
         working-directory: ${{ inputs.working-directory }}
 
       - name: Publish to pub.dev
-        # flutter pub publish does not work on CI (waits for auth)
-        run: dart pub publish -f
+        run: flutter pub publish -f
         working-directory: ${{ inputs.working-directory }}
