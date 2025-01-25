@@ -22,8 +22,8 @@ jobs:
 
       - name: Verify build_runner generated files
         run: |
-          if flutter pub deps --executables | grep -q build_runner; then
-            flutter run build_runner build --delete-conflicting-outputs
+          if dart pub deps --executables | grep -q build_runner; then
+            dart run build_runner build --delete-conflicting-outputs
           fi
           [ -z "$(git status -s)" ]
         working-directory: ${{ inputs.working-directory }}
