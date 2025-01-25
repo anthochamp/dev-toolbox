@@ -2,6 +2,11 @@ name: Dart Lint
 
 on:
   workflow_call:
+    inputs:
+      working-directory:
+        description: Directory within the repository where the package is located
+        required: false
+        type: string
 
 jobs:
   lint:
@@ -15,15 +20,19 @@ jobs:
 
       - name: Install dependencies
         run: dart pub get
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Analyse source code
         run: dart analyze --fatal-infos .
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Execute code_metrics
         run: |
           if dart pub deps --executables | grep -q ac_code_metrics; then
             dart run ac_code_metrics:metrics analyze .
           fi
+        working-directory: ${{ inputs.working-directory }}
