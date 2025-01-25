@@ -1,0 +1,29 @@
+name: Flutter Lint
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94 # v1.7.0
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyse source code
+        run: flutter analyze .
+
+      - name: Execute code_metrics
+        run: |
+          if dart pub deps --executables | grep -q ac_code_metrics; then
+            dart run ac_code_metrics:metrics analyze .
+          fi
