@@ -1,0 +1,22 @@
+pre-commit:
+  parallel: true
+  commands:
+    tsc:
+      glob: "*.{ts,tsx,cts,mts}"
+      # scan the whole project (cf. https://github.com/microsoft/TypeScript/issues/27379)
+      run: npm run tsc:check
+    biome:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: npx --package @biomejs/biome biome check --error-on-warnings {staged_files}
+    markdownlint:
+      glob: "*.{md,mdx}"
+      run: npx markdownlint-cli2 --no-globs {staged_files}
+    halolint:
+      glob: "*Dockerfile*"
+      run: for f in {staged_files}; do docker --context default run --rm -i -v hadolint.yaml:/root/.config/hadolint.yaml hadolint/hadolint hadolint - <"$f"; done
+
+skip_output:
+  - meta
+  - success
+  - empty_summary
+  - execution

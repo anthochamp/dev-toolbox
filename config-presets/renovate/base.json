@@ -1,0 +1,18 @@
+{
+	"extends": [
+		"config:best-practices",
+		":automergeLinters",
+		":automergeStableNonMajor",
+		":combinePatchMinorReleases",
+		":disableRateLimiting",
+		":rebaseStalePrs",
+		"mergeConfidence:all-badges"
+	],
+	"schedule": [
+		"after 10pm every weekday",
+		"before 5am every weekday",
+		"every weekend"
+	],
+	"platformAutomerge": true,
+	"labels": ["dependencies"]
+}

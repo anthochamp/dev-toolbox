@@ -1,0 +1,8 @@
+{
+	"extends": [
+		"config:js-app",
+		"github>anthochamp/dev-toolbox//config-presets/renovate/base",
+		"customManagers:biomeVersions",
+		":automergeTypes"
+	]
+}
