@@ -3,7 +3,7 @@ name: Node.js Common Lint
 on:
   workflow_call:
     inputs:
-      package-manager:
+      node-package-manager:
         description: "Node.js package manager to use: npm, yarn or pnpm"
         required: true
         type: string
@@ -33,24 +33,25 @@ jobs:
           node-version-file: ${{ inputs.node-version-file }}
 
       - name: Install dependencies (NPM)
-        if: ${{ inputs.package-manager == 'npm' }}
+        if: ${{ inputs.node-package-manager == 'npm' }}
         run: npm ci
         working-directory: ${{ inputs.working-directory }}
 
       - name: Install dependencies (Yarn)
-        if: ${{ inputs.package-manager == 'yarn' }}
+        if: ${{ inputs.node-package-manager == 'yarn' }}
         run: yarn install
         working-directory: ${{ inputs.working-directory }}
 
       - name: Install dependencies (PNPM)
-        if: ${{ inputs.package-manager == 'pnpm' }}
+        if: ${{ inputs.node-package-manager == 'pnpm' }}
         run: pnpm i
         working-directory: ${{ inputs.working-directory }}
 
       - name: Execute biome
-        run: ${{ inputs.package-manager }} run biome:check
+        run: ${{ inputs.node-package-manager }} run biome:check
         working-directory: ${{ inputs.working-directory }}
 
       - name: Check Typescript typings
-        run: ${{ inputs.package-manager }} run tsc:check
+        if: ${{ hashFiles('tsconfig.json') != '' }}
+        run: ${{ inputs.node-package-manager }} run tsc:check
         working-directory: ${{ inputs.working-directory }}

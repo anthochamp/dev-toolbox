@@ -12,16 +12,17 @@ jobs:
   common-lint:
     uses: ./.github/workflows/common-lint.yml
     with:
+      node-package-manager: npm
       working-directory: ${{ inputs.working-directory }}
 
   node-common-lint:
     uses: ./.github/workflows/node-common-lint.yml
     with:
-      package-manager: npm
+      node-package-manager: npm
       working-directory: ${{ inputs.working-directory }}
 
   node-test:
     uses: ./.github/workflows/node-test.yml
     with:
-      package-manager: npm
+      node-package-manager: npm
       working-directory: ${{ inputs.working-directory }}

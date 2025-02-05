@@ -3,6 +3,18 @@ name: Common Lint
 on:
   workflow_call:
     inputs:
+      node-package-manager:
+        description: "Node.js package manager to use: npm, yarn, pnpm or none"
+        required: false
+        type: string
+      node-version:
+        description: "Version Spec of the Node.js version to use (takes precedence over node-version-file). Examples: 12.x, 10.15.1, >=10.15.0."
+        required: false
+        type: string
+      node-version-file:
+        description: "File containing the version Spec of the version to use. Examples: package.json, .nvmrc, .node-version, .tool-versions."
+        required: false
+        type: string
       working-directory:
         description: Directory within the repository where the package is located
         required: false
@@ -12,6 +24,9 @@ jobs:
   markdownlint:
     uses: ./.github/workflows/linter-markdownlint.yml
     with:
+      node-package-manager: ${{ inputs.node-package-manager }}
+      node-version: ${{ inputs.node-version }}
+      node-version-file: ${{ inputs.node-version-file }}
       working-directory: ${{ inputs.working-directory }}
 
   hadolint:

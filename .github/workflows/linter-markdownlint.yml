@@ -7,6 +7,19 @@ on:
         description: "Directory within the repository where the package is located."
         required: false
         type: string
+      node-package-manager:
+        description: "Node.js package manager to use: npm, yarn, pnpm or none"
+        required: true
+        type: string
+      node-version:
+        description: "Version Spec of the Node.js version to use (takes precedence over node-version-file). Examples: 12.x, 10.15.1, >=10.15.0."
+        required: false
+        type: string
+      node-version-file:
+        description: "File containing the version Spec of the version to use. Examples: package.json, .nvmrc, .node-version, .tool-versions."
+        required: false
+        type: string
+        default: ".nvmrc"
 
 jobs:
   markdownlint:
@@ -15,6 +28,27 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
+        if: ${{ inputs.node-package-manager != 'none' }}
+        with:
+          node-version: ${{ inputs.node-version }}
+          node-version-file: ${{ inputs.node-version-file }}
+
+      - name: Install Node.js dependencies (NPM)
+        if: ${{ inputs.node-package-manager == 'npm' }}
+        run: npm ci
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Install Node.js dependencies (Yarn)
+        if: ${{ inputs.node-package-manager == 'yarn' }}
+        run: yarn install
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Install Node.js dependencies (PNPM)
+        if: ${{ inputs.node-package-manager == 'pnpm' }}
+        run: pnpm i
+        working-directory: ${{ inputs.working-directory }}
+
       - name: Lint Markdown files
-        run: docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2 '**/*.md'
+        run: docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2:v0.17.2 '**/*.md'
         working-directory: ${{ inputs.working-directory }}
