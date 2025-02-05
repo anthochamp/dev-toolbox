@@ -1,0 +1,25 @@
+name: Dart Validate
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory within the repository where the package is located
+        required: false
+        type: string
+
+jobs:
+  common-lint:
+    uses: ./.github/workflows/common-lint.yml
+    with:
+      working-directory: ${{ inputs.working-directory }}
+
+  dart-lint:
+    uses: ./.github/workflows/dart-lint.yml
+    with:
+      working-directory: ${{ inputs.working-directory }}
+
+  dart-test:
+    uses: ./.github/workflows/dart-test.yml
+    with:
+      working-directory: ${{ inputs.working-directory }}

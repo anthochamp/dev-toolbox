@@ -1,3 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    tsc:
+      glob: "*.{ts,tsx,cts,mts}"
+      # scan the whole project (cf. https://github.com/microsoft/TypeScript/issues/27379)
+      run: npm run tsc:check
+    biome:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: npx --package @biomejs/biome biome check --error-on-warnings --no-errors-on-unmatched {staged_files}
+
 pre-push:
   commands:
     test:

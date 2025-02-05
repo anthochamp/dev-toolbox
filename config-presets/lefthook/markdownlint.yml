@@ -1,0 +1,6 @@
+pre-commit:
+  parallel: true
+  commands:
+    markdownlint:
+      glob: "*.md"
+      run: docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2:v0.17.2 --no-globs {staged_files}

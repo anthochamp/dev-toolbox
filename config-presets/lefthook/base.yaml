@@ -1,0 +1,5 @@
+skip_output:
+  - meta
+  - success
+  - empty_summary
+  - execution
