@@ -1,8 +1,12 @@
-name: Node.js NPM Test
+name: Node.js Test
 
 on:
   workflow_call:
     inputs:
+      package-manager:
+        description: "Node.js package manager to use: npm, yarn or pnpm"
+        required: true
+        type: string
       node-version:
         description: "Version Spec of the Node.js version to use (takes precedence over node-version-file). Examples: 12.x, 10.15.1, >=10.15.0."
         required: false
@@ -28,10 +32,21 @@ jobs:
           node-version: ${{ inputs.node-version }}
           node-version-file: ${{ inputs.node-version-file }}
 
-      - name: Install dependencies
+      - name: Install dependencies (NPM)
+        if: ${{ inputs.package-manager == 'npm' }}
         run: npm ci
         working-directory: ${{ inputs.working-directory }}
 
+      - name: Install dependencies (Yarn)
+        if: ${{ inputs.package-manager == 'yarn' }}
+        run: yarn install
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Install dependencies (PNPM)
+        if: ${{ inputs.package-manager == 'pnpm' }}
+        run: pnpm i
+        working-directory: ${{ inputs.working-directory }}
+
       - name: Execute tests
-        run: npm test
+        run: ${{ inputs.package-manager }} test
         working-directory: ${{ inputs.working-directory }}

@@ -1,0 +1,111 @@
+name: Container Publish
+
+on:
+  workflow_call:
+    secrets:
+      dhub-username:
+        required: true
+      dhub-password:
+        required: true
+      ghcr-username:
+        required: true
+      ghcr-password:
+        required: true
+    inputs:
+      environment:
+        description: Environment in which the workflow is required to run
+        required: false
+        type: string
+      working-directory:
+        description: Directory within the repository where the package is located
+        required: false
+        type: string
+      build-platforms:
+        description: "Published container platforms. Examples: linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6"
+        required: true
+        type: string
+        default: linux/amd64,linux/arm64
+      additional-tags:
+        description: "Additional tags to publish"
+        required: false
+        type: string
+      dhub-image-name:
+        description: "Docker Hub image name"
+        required: true
+        type: string
+      dhub-readme-file:
+        description: "Path to Docker HUB container description file"
+        required: false
+        type: string
+      ghcr-image-name:
+        description: "GitHub Container Registry image name"
+        required: true
+        type: string
+
+jobs:
+  container-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+
+      - name: Log into Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          username: ${{ secrets.dhub-username }}
+          password: ${{ secrets.dhub-password }}
+
+      - name: Log into GitHub Container Registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.ghcr-username }}
+          password: ${{ secrets.ghcr-password }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96 # v5.6.1
+        with:
+          images: |
+            name=${{ inputs.dhub-image-name }}
+            name=ghcr.io/${{ inputs.ghcr-image-name }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+            ${{ inputs.additional-tags }}
+
+      - name: Build and push Docker images
+        id: build-and-push
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        with:
+          context: src
+          platforms: ${{ inputs.build-platforms }}
+          #push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the published Docker images
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Update Docker Hub repository description
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
+        with:
+          username: ${{ secrets.dhub-username }}
+          password: ${{ secrets.dhub-password }}
+          repository: ${{ inputs.dhub-image-name }}
+          readme-filepath: ${{ inputs.dhub-readme-file }}
