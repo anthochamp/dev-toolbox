@@ -1,5 +1,5 @@
 extends:
-  - config-presets/lefthook/base.yaml
-  - config-presets/lefthook/hadolint.yaml
-  - config-presets/lefthook/markdownlint.yaml
-  - config-presets/lefthook/spellcheck.yaml
+  - base.yaml
+  - hadolint.yaml
+  - markdownlint.yaml
+  - spellcheck.yaml
