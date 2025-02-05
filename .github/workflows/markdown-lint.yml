@@ -16,5 +16,5 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Lint Markdown files
-        run: docker run -v $(pwd):/workdir davidanson/markdownlint-cli2 -- '**/*.md' '!node_modules'
+        run: docker run -v $(pwd):/workdir davidanson/markdownlint-cli2 -- '**/*.md'
         working-directory: ${{ inputs.working-directory }}
