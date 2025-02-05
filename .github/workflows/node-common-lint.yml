@@ -22,7 +22,7 @@ on:
         type: string
 
 jobs:
-  test:
+  node-common-lint:
     runs-on: ubuntu-latest
 
     steps:
