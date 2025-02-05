@@ -1,4 +1,4 @@
-name: Common Validate
+name: Flutter Validate
 
 on:
   workflow_call:
@@ -9,17 +9,17 @@ on:
         type: string
 
 jobs:
-  markdownlint:
-    uses: ./.github/workflows/linter-markdownlint.yml
+  common-lint:
+    uses: ./.github/workflows/common-lint.yml
     with:
       working-directory: ${{ inputs.working-directory }}
 
-  hadolint:
-    uses: ./.github/workflows/linter-hadolint.yml
+  flutter-lint:
+    uses: ./.github/workflows/flutter-lint.yml
     with:
       working-directory: ${{ inputs.working-directory }}
 
-  shellcheck:
-    uses: ./.github/workflows/linter-shellcheck.yml
+  flutter-test:
+    uses: ./.github/workflows/flutter-test.yml
     with:
       working-directory: ${{ inputs.working-directory }}

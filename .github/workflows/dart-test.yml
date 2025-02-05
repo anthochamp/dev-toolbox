@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  test:
+  dart-test:
     runs-on: ubuntu-latest
 
     steps:

@@ -1,4 +1,4 @@
-name: Node NPM Test
+name: Node.js NPM Test
 
 on:
   workflow_call:
@@ -18,7 +18,7 @@ on:
         type: string
 
 jobs:
-  test:
+  node-npm-test:
     runs-on: ubuntu-latest
 
     steps:

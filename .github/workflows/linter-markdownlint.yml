@@ -1,4 +1,4 @@
-name: Markdown Lint
+name: Markdownlint
 
 on:
   workflow_call:
@@ -9,12 +9,12 @@ on:
         type: string
 
 jobs:
-  test:
+  markdownlint:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Lint Markdown files
-        run: docker run -v $(pwd):/workdir davidanson/markdownlint-cli2 -- '**/*.md'
+        run: docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2 '**/*.md'
         working-directory: ${{ inputs.working-directory }}

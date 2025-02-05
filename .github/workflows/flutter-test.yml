@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  test:
+  flutter-test:
     runs-on: ubuntu-latest
 
     steps:

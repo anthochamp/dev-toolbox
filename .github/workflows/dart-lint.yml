@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  lint:
+  dart-lint:
     runs-on: ubuntu-latest
 
     steps:

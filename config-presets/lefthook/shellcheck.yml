@@ -1,0 +1,6 @@
+pre-commit:
+  parallel: true
+  commands:
+    shellcheck:
+      glob: "*.sh"
+      run: docker --context default run --rm -v $(pwd):/mnt koalaman/shellcheck:v0.10.0 {staged_files}

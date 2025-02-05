@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  lint:
+  flutter-lint:
     runs-on: ubuntu-latest
 
     steps:
