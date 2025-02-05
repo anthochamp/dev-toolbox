@@ -17,5 +17,5 @@ jobs:
 
       - name: Lint shell scripts
         if: ${{ hashFiles('**/*.sh') != '' }}
-        run: docker --context run --rm -v $(pwd):/mnt koalaman/shellcheck:v0.10.0 **/*.sh
+        run: docker --context default run --rm -v $(pwd):/mnt koalaman/shellcheck:v0.10.0 **/*.sh
         working-directory: ${{ inputs.working-directory }}
