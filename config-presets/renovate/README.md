@@ -10,7 +10,7 @@
   {
    "description": "Disable auto merge",
    "automerge": false,
-   "matchPackagePrefixes": []
+   "matchPackageNames": []
   }
 ```
 
@@ -20,6 +20,6 @@
   {
    "description": "Disable updates",
    "enabled": false,
-   "matchPackagePrefixes": []
+   "matchPackageNames": []
   }
 ```

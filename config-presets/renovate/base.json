@@ -1,4 +1,5 @@
 {
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
 		"config:best-practices",
 		":automergeLinters",
@@ -8,11 +9,24 @@
 		":rebaseStalePrs",
 		"mergeConfidence:all-badges"
 	],
-	"schedule": [
-		"after 10pm every weekday",
-		"before 5am every weekday",
-		"every weekend"
-	],
-	"platformAutomerge": true,
-	"labels": ["dependencies"]
+	"schedule": ["* 21-23 * * 0"],
+	"automergeSchedule": ["* 4-6 * * 5"],
+	"labels": ["dependencies"],
+	"packageRules": [
+		{
+			"matchDatasources": ["github-tags"],
+			"matchPackageNames": ["anthochamp/*"],
+			"automerge": true
+		},
+		{
+			"matchDatasources": ["npm"],
+			"matchPackageNames": ["@ac-essentials/*"],
+			"automerge": true
+		},
+		{
+			"matchDatasources": ["dart"],
+			"matchPackageNames": ["ac_*"],
+			"automerge": true
+		}
+	]
 }
