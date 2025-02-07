@@ -22,7 +22,7 @@ on:
         type: string
 
 jobs:
-  node-npm-test:
+  node-test:
     runs-on: ubuntu-latest
 
     steps:
