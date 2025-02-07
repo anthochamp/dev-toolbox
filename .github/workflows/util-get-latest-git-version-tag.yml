@@ -1,0 +1,39 @@
+name: Get latest Git version tag
+
+on:
+  workflow_call:
+    inputs:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
+      tag_pattern:
+        description: Tag PERL regexp pattern
+        required: false
+        type: string
+        default: 'v\d+\.\d+\.\d+'
+    outputs:
+      tag:
+        value: ${{ jobs.get-latest-git-version-tag.outputs.tag }}
+      version:
+        value: ${{ jobs.get-latest-git-version-tag.outputs.version }}
+
+jobs:
+  get-latest-git-version-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.git-tagged-version.outputs.TAG }}
+      version: ${{ steps.git-tagged-version.outputs.VERSION }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.checkout-ref }}
+          fetch-depth: 0
+
+      - name: Find out latest git tagged version
+        id: git-tagged-version
+        run: |
+          lastTag=$(for tag in $(git tag | grep -P '${{ inputs.tag_pattern }}'); do git describe --tags --match="$tag" --abbrev=0 2>/dev/null; done | sort -Vr | head -n1)
+          echo "TAG=$lastTag" >>$GITHUB_OUTPUT
+          echo "VERSION=${lastTag#v}" >>$GITHUB_OUTPUT
