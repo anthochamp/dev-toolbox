@@ -9,8 +9,8 @@
 		":rebaseStalePrs",
 		"mergeConfidence:all-badges"
 	],
-	"schedule": ["* 21-23 * * 0"],
-	"automergeSchedule": ["* 4-6 * * 5"],
+	"schedule": ["* 4-6 * * 3"],
+	"automergeSchedule": ["* 4-6 * * 1"],
 	"labels": ["dependencies"],
 	"packageRules": [
 		{
