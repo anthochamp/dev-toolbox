@@ -3,10 +3,6 @@ name: Dart Lib Publish
 on:
   workflow_call:
     inputs:
-      environment:
-        description: Environment in which the workflow is required to run
-        required: false
-        type: string
       working-directory:
         description: Directory within the repository where the package is located
         required: false

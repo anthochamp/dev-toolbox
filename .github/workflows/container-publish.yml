@@ -1,4 +1,4 @@
-name: Container Publish
+name: Publish Container
 
 on:
   workflow_call:
@@ -12,33 +12,25 @@ on:
       ghcr-password:
         required: true
     inputs:
-      environment:
-        description: Environment in which the workflow is required to run
-        required: false
-        type: string
       build-context:
-        description: Build's context is the set of files located in the specified PATH or URL
+        description: Path to the Dockerfile
         required: false
         type: string
       build-platforms:
         description: "List of target platforms for build. Examples: linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6"
         required: false
         type: string
-        default: linux/amd64,linux/arm64
-      additional-tags:
-        description: "Additional tags to publish"
-        required: false
-        type: string
-      dhub-image-name:
-        description: "Docker Hub image name"
+        default: linux/amd64,linux/arm64,linux/arm/v7
+      container-tags:
+        description: Container tags to publish
         required: true
         type: string
-      dhub-readme-file:
-        description: "Path to Docker HUB container description file"
-        required: false
+      dhub-image-name:
+        description: Docker Hub image name
+        required: true
         type: string
       ghcr-image-name:
-        description: "GitHub Container Registry image name"
+        description: GitHub Container Registry image name
         required: true
         type: string
 
@@ -78,11 +70,7 @@ jobs:
           images: |
             name=${{ secrets.dhub-username }}/${{ inputs.dhub-image-name }}
             name=ghcr.io/${{ github.repository_owner }}/${{ inputs.ghcr-image-name }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
-            ${{ inputs.additional-tags }}
+          tags: ${{ inputs.container-tags }}
 
       - name: Build and push Docker images
         id: build-and-push
@@ -95,17 +83,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        env:
+          # https://docs.docker.com/build/ci/github-actions/reproducible-builds/
+          SOURCE_DATE_EPOCH: 0
 
-      - name: Sign the published Docker images
+      - name: Sign the published container images
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-
-      - name: Update Docker Hub repository description
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.dhub-username }}
-          password: ${{ secrets.dhub-password }}
-          repository: ${{ secrets.dhub-username }}/${{ inputs.dhub-image-name }}
-          readme-filepath: ${{ inputs.dhub-readme-file }}

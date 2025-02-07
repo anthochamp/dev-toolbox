@@ -1,0 +1,44 @@
+name: Update Docker Hub repository description
+
+on:
+  workflow_call:
+    secrets:
+      username:
+        required: true
+      password:
+        required: true
+      repository:
+        description: 'Docker Hub repository (ie. <namespace>/<name>)'
+        required: true
+    inputs:
+      readme-file:
+        description: Path to the repository README file
+        required: false
+        type: string
+        default: ./README.md
+      short-description:
+        description: Repository short description
+        required: false
+        type: string
+
+jobs:
+  docker-hub-update-repo-desc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Log into Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+
+      - name: Update Docker Hub repository description
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
+        with:
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+          repository: ${{ secrets.repository }}
+          readme-filepath: ${{ inputs.readme-file }}
+          short-description: ${{ inputs.short-description }}
