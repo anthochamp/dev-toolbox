@@ -17,7 +17,7 @@ jobs:
     uses: ./.github/workflows/common-lint.yml
     with:
       node-package-manager: none
-      working-directory: ${{ inputs.package-dir }}
+      working-dir: ${{ inputs.package-dir }}
 
   flutter-lint:
     uses: ./.github/workflows/flutter-lint.yml

@@ -7,7 +7,7 @@ on:
         description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
         required: false
         type: string
-      working-directory:
+      working-dir:
         description: "Directory within the repository where the package is located."
         required: false
         type: string
@@ -25,4 +25,4 @@ jobs:
       - name: Lint shell scripts
         if: ${{ hashFiles('**/*.sh') != '' }}
         run: docker --context default run --rm -v $(pwd):/mnt koalaman/shellcheck:v0.10.0 **/*.sh
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-dir }}

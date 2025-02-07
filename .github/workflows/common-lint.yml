@@ -15,7 +15,7 @@ on:
         description: "File containing the version Spec of the version to use. Examples: package.json, .nvmrc, .node-version, .tool-versions."
         required: false
         type: string
-      working-directory:
+      working-dir:
         description: Directory within the repository where the package is located
         required: false
         type: string
@@ -27,14 +27,14 @@ jobs:
       node-package-manager: ${{ inputs.node-package-manager }}
       node-version: ${{ inputs.node-version }}
       node-version-file: ${{ inputs.node-version-file }}
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working-dir }}
 
   hadolint:
     uses: ./.github/workflows/linter-hadolint.yml
     with:
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working-dir }}
 
   shellcheck:
     uses: ./.github/workflows/linter-shellcheck.yml
     with:
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working-dir }}

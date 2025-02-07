@@ -7,7 +7,7 @@ on:
         description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
         required: false
         type: string
-      working-directory:
+      working-dir:
         description: "Directory within the repository where the package is located."
         required: false
         type: string
@@ -44,18 +44,18 @@ jobs:
       - name: Install Node.js dependencies (NPM)
         if: ${{ inputs.node-package-manager == 'npm' }}
         run: npm ci
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-dir }}
 
       - name: Install Node.js dependencies (Yarn)
         if: ${{ inputs.node-package-manager == 'yarn' }}
         run: yarn install
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-dir }}
 
       - name: Install Node.js dependencies (PNPM)
         if: ${{ inputs.node-package-manager == 'pnpm' }}
         run: pnpm i
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-dir }}
 
       - name: Lint Markdown files
         run: docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2:v0.17.2 '**/*.md'
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-dir }}
