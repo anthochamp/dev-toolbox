@@ -27,14 +27,14 @@ jobs:
       node-package-manager: ${{ inputs.node-package-manager }}
       node-version: ${{ inputs.node-version }}
       node-version-file: ${{ inputs.node-version-file }}
-      working-directory: ${{ inputs.working-dir }}
+      working-dir: ${{ inputs.working-dir }}
 
   hadolint:
     uses: ./.github/workflows/linter-hadolint.yml
     with:
-      working-directory: ${{ inputs.working-dir }}
+      working-dir: ${{ inputs.working-dir }}
 
   shellcheck:
     uses: ./.github/workflows/linter-shellcheck.yml
     with:
-      working-directory: ${{ inputs.working-dir }}
+      working-dir: ${{ inputs.working-dir }}

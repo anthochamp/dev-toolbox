@@ -17,7 +17,7 @@ jobs:
     uses: ./.github/workflows/common-lint.yml
     with:
       node-package-manager: npm
-      working-directory: ${{ inputs.working-dir }}
+      working-dir: ${{ inputs.working-dir }}
 
   node-common-lint:
     uses: ./.github/workflows/node-common-lint.yml
