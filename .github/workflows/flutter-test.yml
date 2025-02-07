@@ -1,9 +1,13 @@
-name: Flutter Test
+name: Test a flutter project
 
 on:
   workflow_call:
     inputs:
-      working-directory:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
+      package-dir:
         description: Directory within the repository where the package is located
         required: false
         type: string
@@ -13,16 +17,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.checkout-ref }}
+
       - uses: flutter-actions/setup-flutter@v4
 
       - name: Install dependencies
         run: flutter pub get
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.package-dir }}
 
       - name: Execute tests
         run: |
           if ls -A test &>/dev/null; then
             flutter test
           fi
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.package-dir }}

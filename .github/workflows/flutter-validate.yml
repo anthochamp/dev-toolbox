@@ -1,9 +1,13 @@
-name: Flutter Validate
+name: Validate a flutter project
 
 on:
   workflow_call:
     inputs:
-      working-directory:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
+      package-dir:
         description: Directory within the repository where the package is located
         required: false
         type: string
@@ -13,14 +17,16 @@ jobs:
     uses: ./.github/workflows/common-lint.yml
     with:
       node-package-manager: none
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.package-dir }}
 
   flutter-lint:
     uses: ./.github/workflows/flutter-lint.yml
     with:
-      working-directory: ${{ inputs.working-directory }}
+      checkout-ref: ${{ inputs.checkout-ref }}
+      package-dir: ${{ inputs.package-dir }}
 
   flutter-test:
     uses: ./.github/workflows/flutter-test.yml
     with:
-      working-directory: ${{ inputs.working-directory }}
+      checkout-ref: ${{ inputs.checkout-ref }}
+      package-dir: ${{ inputs.package-dir }}

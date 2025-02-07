@@ -1,8 +1,12 @@
-name: Container Validate
+name: Validate a container project
 
 on:
   workflow_call:
     inputs:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
       working-directory:
         description: Directory within the repository where the package is located
         required: false
@@ -19,10 +23,12 @@ jobs:
     uses: ./.github/workflows/node-common-lint.yml
     with:
       node-package-manager: npm
-      working-directory: ${{ inputs.working-directory }}
+      checkout-ref: ${{ inputs.checkout-ref }}
+      package-dir: ${{ inputs.working-directory }}
 
   node-test:
     uses: ./.github/workflows/node-test.yml
     with:
       node-package-manager: npm
-      working-directory: ${{ inputs.working-directory }}
+      checkout-ref: ${{ inputs.checkout-ref }}
+      package-dir: ${{ inputs.working-directory }}

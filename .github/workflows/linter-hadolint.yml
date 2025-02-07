@@ -3,6 +3,10 @@ name: Hadolint
 on:
   workflow_call:
     inputs:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
       working-directory:
         description: "Directory within the repository where the package is located."
         required: false
@@ -13,7 +17,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.checkout-ref }}
 
       - name: Lint Dockerfile files
         if: ${{ hashFiles('**/*Dockerfile*') != '' }}

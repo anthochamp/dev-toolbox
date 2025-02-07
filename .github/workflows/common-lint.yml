@@ -1,4 +1,4 @@
-name: Common Lint
+name: Common lint jobs
 
 on:
   workflow_call:

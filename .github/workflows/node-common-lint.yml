@@ -1,8 +1,12 @@
-name: Node.js Common Lint
+name: Node.js common lint jobs
 
 on:
   workflow_call:
     inputs:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
       node-package-manager:
         description: "Node.js package manager to use: npm, yarn or pnpm"
         required: true
@@ -16,7 +20,7 @@ on:
         required: false
         type: string
         default: ".nvmrc"
-      working-directory:
+      package-dir:
         description: "Directory within the repository where the package is located."
         required: false
         type: string
@@ -26,7 +30,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.checkout-ref }}
+
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
         with:
           node-version: ${{ inputs.node-version }}
@@ -35,23 +43,23 @@ jobs:
       - name: Install dependencies (NPM)
         if: ${{ inputs.node-package-manager == 'npm' }}
         run: npm ci
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.package-dir }}
 
       - name: Install dependencies (Yarn)
         if: ${{ inputs.node-package-manager == 'yarn' }}
         run: yarn install
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.package-dir }}
 
       - name: Install dependencies (PNPM)
         if: ${{ inputs.node-package-manager == 'pnpm' }}
         run: pnpm i
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.package-dir }}
 
       - name: Execute biome
         run: ${{ inputs.node-package-manager }} run biome:check
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.package-dir }}
 
       - name: Check Typescript typings
         if: ${{ hashFiles('tsconfig.json') != '' }}
         run: ${{ inputs.node-package-manager }} run tsc:check
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.package-dir }}
