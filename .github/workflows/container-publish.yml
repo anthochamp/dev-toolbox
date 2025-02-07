@@ -44,6 +44,10 @@ on:
         description: Container image name
         required: true
         type: string
+      build-platforms:
+        description: "List of target platforms for build. Examples: linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6"
+        required: false
+        type: string
 
 jobs:
   check-version:
@@ -119,6 +123,7 @@ jobs:
       build-context-dir: ${{ inputs.dockerfile-dir }}
       container-image-name: ${{ inputs.container-image-name }}
       container-tags: ${{ needs.compose-container-tags.outputs.container-tags }}
+      build-platforms: ${{ inputs.build-platforms }}
     secrets:
       dhub-username: ${{ secrets.dhub-username }}
       dhub-password: ${{ secrets.dhub-password }}
