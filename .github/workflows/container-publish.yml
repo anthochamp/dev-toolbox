@@ -89,17 +89,17 @@ jobs:
       container-tags: |
         type=raw,priority=1000,value=${{ inputs.version }}-${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' }}
         type=raw,priority=900,value=${{ inputs.version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' }}
-        type=raw,priority=800,value=${{ steps.versions.outputs.MAJOR }}.${{ steps.versions.outputs.MINOR }}-${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' }}
-        type=raw,priority=700,value=${{ steps.versions.outputs.MAJOR }}.${{ steps.versions.outputs.MINOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' }}
-        type=raw,priority=600,value=${{ steps.versions.outputs.MAJOR }}-${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' && steps.versions.outputs.MAJOR != '0' }}
-        type=raw,priority=500,value=${{ steps.versions.outputs.MAJOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && steps.versions.outputs.MAJOR != '0' }}
+        type=raw,priority=800,value=${{ steps.versions.outputs.MAJOR }}.${{ steps.versions.outputs.MINOR }}-${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' && steps.versions.outputs.MINOR != '' }}
+        type=raw,priority=700,value=${{ steps.versions.outputs.MAJOR }}.${{ steps.versions.outputs.MINOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && steps.versions.outputs.MINOR != '' }}
+        type=raw,priority=600,value=${{ steps.versions.outputs.MAJOR }}-${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' && steps.versions.outputs.MAJOR != inputs.version && steps.versions.outputs.MAJOR != '0' }}
+        type=raw,priority=500,value=${{ steps.versions.outputs.MAJOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && steps.versions.outputs.MAJOR != inputs.version && steps.versions.outputs.MAJOR != '0' }}
         type=raw,priority=400,value=${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' }}
-        type=raw,priority=300,value=${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }}.${{ steps.versions.outputs.ALT_MINOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' }}
-        type=raw,priority=200,value=${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' && steps.versions.outputs.ALT_MAJOR != '0' }}
+        type=raw,priority=300,value=${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }}.${{ steps.versions.outputs.ALT_MINOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && steps.versions.outputs.ALT_MINOR != '' }}
+        type=raw,priority=200,value=${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && steps.versions.outputs.ALT_MAJOR != inputs.alt-version && steps.versions.outputs.ALT_MAJOR != '0' }}
         type=raw,priority=100,value=latest,enable=${{ needs.check-version.outputs.version-already-exists != '1' }}
         type=raw,priority=40,value=edge-${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ inputs.checkout-ref == '' && github.ref_type != 'tag' && inputs.alt-version != '' }}
-        type=raw,priority=30,value=edge-${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }}.${{ steps.versions.outputs.ALT_MINOR }},enable=${{ inputs.checkout-ref == '' && github.ref_type != 'tag' && inputs.alt-version != '' }}
-        type=raw,priority=20,value=edge-${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }},enable=${{ inputs.checkout-ref == '' && github.ref_type != 'tag' && inputs.alt-version != '' && steps.versions.outputs.ALT_MAJOR != '0' }}
+        type=raw,priority=30,value=edge-${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }}.${{ steps.versions.outputs.ALT_MINOR }},enable=${{ inputs.checkout-ref == '' && github.ref_type != 'tag' && steps.versions.outputs.ALT_MINOR != '' }}
+        type=raw,priority=20,value=edge-${{ inputs.alt-version-prefix }}${{ steps.versions.outputs.ALT_MAJOR }},enable=${{ inputs.checkout-ref == '' && github.ref_type != 'tag' && steps.versions.outputs.ALT_MAJOR != inputs.alt-version && steps.versions.outputs.ALT_MAJOR != '0' }}
         type=raw,priority=10,value=edge,enable=${{ inputs.checkout-ref == '' && github.ref_type != 'tag' }}
     steps:
       - name: Decompose versions
