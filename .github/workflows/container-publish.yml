@@ -85,6 +85,7 @@ jobs:
     needs: check-version
     runs-on: ubuntu-latest
     outputs:
+      has-container-tags-enabled: ${{ needs.check-version.outputs.version-already-exists != '1' || (inputs.checkout-ref == '' && github.ref_type != 'tag') }}
       container-tags: |
         type=raw,priority=1000,value=${{ inputs.version }}-${{ inputs.alt-version-prefix }}${{ inputs.alt-version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' && inputs.alt-version != '' }}
         type=raw,priority=900,value=${{ inputs.version }},enable=${{ needs.check-version.outputs.version-already-exists != '1' }}
@@ -117,6 +118,7 @@ jobs:
 
   container-build-n-push:
     needs: compose-container-tags
+    if: ${{ needs.compose-container-tags.outputs.has-container-tags-enabled }}
     uses: ./.github/workflows/container-build-n-push.yml
     with:
       checkout-ref: ${{ inputs.checkout-ref }}
@@ -132,7 +134,7 @@ jobs:
 
   get-docker-hub-repo-desc:
     needs: container-build-n-push
-    if: ${{ github.ref_type == 'tag' }}
+    if: ${{ inputs.dhub-readme-file != '' && github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     outputs:
       description: ${{ steps.package-json-desc.outputs.VALUE }}
@@ -149,6 +151,9 @@ jobs:
 
   update-docker-hub-repo-info:
     needs: get-docker-hub-repo-desc
+    # underlying default readme-file value forbids us to test either readme-file
+    # or short-desc: readme-file will always be set to README.md if empty.
+    if: ${{ inputs.dhub-readme-file != '' }}
     uses: ./.github/workflows/util-update-docker-hub-repo-info.yml
     with:
       checkout-ref: ${{ inputs.checkout-ref }}
