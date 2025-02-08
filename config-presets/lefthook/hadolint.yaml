@@ -2,5 +2,5 @@ pre-commit:
   parallel: true
   commands:
     hadolint:
-      glob: "*Dockerfile*"
+      glob: "Dockerfile*"
       run: docker --context default run --rm -w /workdir -v $(pwd):/workdir hadolint/hadolint:v2.12.0 hadolint ${staged_files}
