@@ -24,5 +24,6 @@ jobs:
 
       - name: Lint Dockerfile files
         if: ${{ hashFiles('**/*Dockerfile*') != '' }}
-        run: docker --context default run --rm -w /workdir -v $(pwd):/workdir hadolint/hadolint:v2.12.0 hadolint **/*Dockerfile*
+        shell: bash # ensure
+        run: shopt -s globstar && docker --context default run --rm -w /workdir -v $(pwd):/workdir hadolint/hadolint:v2.12.0 hadolint **/*Dockerfile*
         working-directory: ${{ inputs.working-dir }}

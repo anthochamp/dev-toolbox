@@ -57,5 +57,6 @@ jobs:
         working-directory: ${{ inputs.working-dir }}
 
       - name: Lint Markdown files
-        run: docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2:v0.17.2 '**/*.md'
+        shell: bash # ensure
+        run: shopt -s globstar && docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2:v0.17.2 '**/*.md'
         working-directory: ${{ inputs.working-dir }}
