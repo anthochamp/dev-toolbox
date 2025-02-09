@@ -2,4 +2,4 @@ extends:
   - base.yaml
   - hadolint.yaml
   - markdownlint.yaml
-  - spellcheck.yaml
+  - shellcheck.yaml
