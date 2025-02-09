@@ -49,6 +49,9 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: ${{ inputs.container-image-name }}
+
 jobs:
   check-version:
     if: ${{ inputs.version != '' }}

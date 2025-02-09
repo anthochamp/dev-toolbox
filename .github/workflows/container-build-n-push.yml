@@ -90,6 +90,7 @@ jobs:
           SOURCE_DATE_EPOCH: 0
 
       - name: Sign the published Docker images
+        continue-on-error: true # Docker Hub pull limits
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
