@@ -16,17 +16,23 @@
 		{
 			"matchDatasources": ["github-tags"],
 			"matchPackageNames": ["anthochamp/*"],
-			"automerge": true
+			"automerge": true,
+			"automergeType": "branch",
+			"schedule": ["* 4-6 * * *"]
 		},
 		{
 			"matchDatasources": ["npm"],
 			"matchPackageNames": ["@ac-essentials/*"],
-			"automerge": true
+			"automerge": true,
+			"automergeType": "branch",
+			"schedule": ["* 4-6 * * *"]
 		},
 		{
 			"matchDatasources": ["dart"],
 			"matchPackageNames": ["ac_*"],
-			"automerge": true
+			"automerge": true,
+			"automergeType": "branch",
+			"schedule": ["* 4-6 * * *"]
 		}
 	]
 }

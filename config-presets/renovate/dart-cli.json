@@ -1,4 +1,7 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["github>anthochamp/dev-toolbox//config-presets/renovate/base"]
+	"extends": [
+		"github>anthochamp/dev-toolbox//config-presets/renovate/base",
+		"github>anthochamp/dev-toolbox//config-presets/renovate/dart-common"
+	]
 }

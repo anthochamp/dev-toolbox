@@ -1,0 +1,13 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"packageRules": [
+		{
+			"matchPackageNames": ["freezed", "freezed_annotation"],
+			"groupName": "freezed"
+		},
+		{
+			"matchPackageNames": ["json_serializable", "json_annotation"],
+			"groupName": "json_serializable"
+		}
+	]
+}
