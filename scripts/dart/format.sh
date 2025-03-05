@@ -5,4 +5,4 @@ if dart pub deps --executables | grep -q import_sorter; then
 	dart run import_sorter:main --no-comments
 fi
 
-dart format --fix .
+dart format .
