@@ -121,7 +121,7 @@ jobs:
 
   container-build-n-push:
     needs: compose-container-tags
-    if: ${{ needs.compose-container-tags.outputs.has-container-tags-enabled }}
+    if: ${{ needs.compose-container-tags.outputs.has-container-tags-enabled == 'true' }}
     uses: ./.github/workflows/container-build-n-push.yml
     with:
       checkout-ref: ${{ inputs.checkout-ref }}
