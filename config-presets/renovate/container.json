@@ -3,5 +3,11 @@
 	"extends": [
 		"github>anthochamp/dev-toolbox//config-presets/renovate/base",
 		"github>anthochamp/dev-toolbox//config-presets/renovate/js-app"
+	],
+	"packageRules": [
+		{
+			"matchDatasources": ["npm"],
+			"schedule": "* * 1 * *"
+		}
 	]
 }

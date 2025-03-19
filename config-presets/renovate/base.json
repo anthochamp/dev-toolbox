@@ -7,10 +7,10 @@
 		":combinePatchMinorReleases",
 		":disableRateLimiting",
 		":rebaseStalePrs",
-		"mergeConfidence:all-badges"
+		"mergeConfidence:all-badges",
+		":prConcurrentLimitNone"
 	],
-	"schedule": ["* 4-6 * * 3"],
-	"automergeSchedule": ["* 4-6 * * 1"],
+	"automergeSchedule": ["* 6-19 * * 1-5"],
 	"labels": ["dependencies"],
 	"packageRules": [
 		{
@@ -18,21 +18,21 @@
 			"matchPackageNames": ["anthochamp/*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"schedule": ["* 4-6 * * *"]
+			"automergeSchedule": ["* * * * *"]
 		},
 		{
 			"matchDatasources": ["npm"],
 			"matchPackageNames": ["@ac-essentials/*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"schedule": ["* 4-6 * * *"]
+			"automergeSchedule": ["* * * * *"]
 		},
 		{
 			"matchDatasources": ["dart"],
 			"matchPackageNames": ["ac_*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"schedule": ["* 4-6 * * *"]
+			"automergeSchedule": ["* * * * *"]
 		}
 	]
 }
