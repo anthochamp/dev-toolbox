@@ -47,12 +47,16 @@ jobs:
 
       - name: Install dependencies (Yarn)
         if: ${{ inputs.node-package-manager == 'yarn' }}
-        run: yarn install
+        run: |
+          corepack enable
+          yarn install
         working-directory: ${{ inputs.package-dir }}
 
       - name: Install dependencies (PNPM)
         if: ${{ inputs.node-package-manager == 'pnpm' }}
-        run: pnpm i
+        run: |
+          corepack enable
+          pnpm i
         working-directory: ${{ inputs.package-dir }}
 
       - name: Execute tests

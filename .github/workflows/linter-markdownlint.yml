@@ -48,12 +48,16 @@ jobs:
 
       - name: Install Node.js dependencies (Yarn)
         if: ${{ inputs.node-package-manager == 'yarn' }}
-        run: yarn install
+        run: |
+          corepack enable
+          yarn install
         working-directory: ${{ inputs.working-dir }}
 
       - name: Install Node.js dependencies (PNPM)
         if: ${{ inputs.node-package-manager == 'pnpm' }}
-        run: pnpm i
+        run: |
+          corepack enable
+          pnpm i
         working-directory: ${{ inputs.working-dir }}
 
       - name: Lint Markdown files
