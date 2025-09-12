@@ -3,6 +3,10 @@ name: Validate a Node.js project
 on:
   workflow_call:
     inputs:
+      node-package-manager:
+        description: "Node.js package manager to use: npm, yarn or pnpm"
+        required: true
+        type: string
       checkout-ref:
         description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
         required: false
@@ -16,19 +20,19 @@ jobs:
   common-lint:
     uses: ./.github/workflows/common-lint.yml
     with:
-      node-package-manager: npm
+      node-package-manager: ${{ inputs.node-package-manager }}
       working-dir: ${{ inputs.working-dir }}
 
   node-common-lint:
     uses: ./.github/workflows/node-common-lint.yml
     with:
-      node-package-manager: npm
+      node-package-manager: ${{ inputs.node-package-manager }}
       checkout-ref: ${{ inputs.checkout-ref }}
       package-dir: ${{ inputs.working-dir }}
 
   node-test:
     uses: ./.github/workflows/node-test.yml
     with:
-      node-package-manager: npm
+      node-package-manager: ${{ inputs.node-package-manager }}
       checkout-ref: ${{ inputs.checkout-ref }}
       package-dir: ${{ inputs.working-dir }}
