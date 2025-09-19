@@ -34,7 +34,10 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: ${{ inputs.checkout-ref }}
-
+      - name: Install and enable corepack
+        run: |
+          npm install -g corepack
+          corepack enable
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ inputs.node-version }}
@@ -47,16 +50,12 @@ jobs:
 
       - name: Install dependencies (Yarn)
         if: ${{ inputs.node-package-manager == 'yarn' }}
-        run: |
-          corepack enable
-          yarn install
+        run: yarn install
         working-directory: ${{ inputs.package-dir }}
 
       - name: Install dependencies (PNPM)
         if: ${{ inputs.node-package-manager == 'pnpm' }}
-        run: |
-          corepack enable
-          pnpm i
+        run: pnpm i
         working-directory: ${{ inputs.package-dir }}
 
       - name: Execute biome
