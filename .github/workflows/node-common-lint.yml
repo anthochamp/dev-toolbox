@@ -63,6 +63,6 @@ jobs:
         working-directory: ${{ inputs.package-dir }}
 
       - name: Check Typescript typings
-        if: ${{ hashFiles('tsconfig.json') != '' }}
+        if: ${{ hashFiles('**/tsconfig.json') != '' }}
         run: ${{ inputs.node-package-manager }} run tsc:check
         working-directory: ${{ inputs.package-dir }}
