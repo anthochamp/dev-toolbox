@@ -1,3 +1,6 @@
+extends:
+  - common.yaml
+
 pre-commit:
   parallel: true
   commands:
