@@ -1,2 +1,2 @@
 extends:
-  - common.yaml
+  - common-flutter.yaml

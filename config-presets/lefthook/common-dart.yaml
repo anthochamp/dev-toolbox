@@ -1,0 +1,10 @@
+extends:
+  - common-dart-base.yaml
+
+pre-push:
+  commands:
+    test:
+      run: |
+        if ls -A test &>/dev/null; then
+          dart test
+        fi
