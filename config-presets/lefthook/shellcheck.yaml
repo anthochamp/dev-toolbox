@@ -3,4 +3,4 @@ pre-commit:
   commands:
     shellcheck:
       glob: "*.sh"
-      run: docker --context default run --rm -v $(pwd):/mnt koalaman/shellcheck:v0.10.0 {staged_files}
+      run: docker --context default run --rm -v $(pwd):/mnt koalaman/shellcheck:v0.11.0 {staged_files}
