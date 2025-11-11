@@ -8,31 +8,54 @@
 		":disableRateLimiting",
 		":rebaseStalePrs",
 		"mergeConfidence:all-badges",
-		":prConcurrentLimitNone"
+		":prConcurrentLimitNone",
+		"group:allNonMajor",
+		"group:allDigest"
 	],
-	"automergeSchedule": ["* 6-19 * * 1-5"],
+	"automergeSchedule": ["at any time"],
+	"schedule": ["between 6am and 6pm on every monday"],
 	"labels": ["dependencies"],
 	"packageRules": [
 		{
+			"groupName": "AC GitHub Repositories",
 			"matchDatasources": ["github-tags"],
 			"matchPackageNames": ["anthochamp/*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"automergeSchedule": ["* * * * *"]
+			"automergeSchedule": ["at any time"]
 		},
 		{
+			"groupName": "AC NPM Packages",
 			"matchDatasources": ["npm"],
 			"matchPackageNames": ["@ac-essentials/*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"automergeSchedule": ["* * * * *"]
+			"automergeSchedule": ["at any time"]
 		},
 		{
+			"groupName": "AC Dart Packages",
 			"matchDatasources": ["dart"],
 			"matchPackageNames": ["ac_*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"automergeSchedule": ["* * * * *"]
+			"automergeSchedule": ["at any time"]
+		},
+		{
+			"groupName": "Base Container Images",
+			"matchDatasources": ["docker"],
+			"matchPackageNames": [
+				"alpine",
+				"debian",
+				"ubuntu",
+				"node",
+				"python",
+				"golang",
+				"openjdk",
+				"php"
+			],
+			"automerge": true,
+			"automergeType": "branch",
+			"automergeSchedule": ["at any time"]
 		}
 	]
 }
