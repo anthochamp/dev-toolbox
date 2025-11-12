@@ -13,7 +13,7 @@
 		"group:allDigest"
 	],
 	"automergeSchedule": ["at any time"],
-	"schedule": ["between 6am and 6pm on every monday"],
+	"schedule": ["between 6am and 6pm on monday"],
 	"labels": ["dependencies"],
 	"packageRules": [
 		{
