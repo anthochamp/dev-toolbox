@@ -7,13 +7,14 @@
 		":combinePatchMinorReleases",
 		":disableRateLimiting",
 		":rebaseStalePrs",
+		":respectLatest",
 		"mergeConfidence:all-badges",
 		":prConcurrentLimitNone",
 		"group:allNonMajor",
-		"group:allDigest"
+		"group:allDigest",
+		"schedule:automergeWeekends",
+		"schedule:weekly"
 	],
-	"automergeSchedule": ["at any time"],
-	"schedule": ["between 6am and 6pm on monday"],
 	"labels": ["dependencies"],
 	"packageRules": [
 		{
@@ -22,7 +23,7 @@
 			"matchPackageNames": ["anthochamp/*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"automergeSchedule": ["at any time"]
+			"automergeSchedule": ["* * * * *"]
 		},
 		{
 			"groupName": "AC NPM Packages",
@@ -30,7 +31,7 @@
 			"matchPackageNames": ["@ac-essentials/*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"automergeSchedule": ["at any time"]
+			"automergeSchedule": ["* * * * *"]
 		},
 		{
 			"groupName": "AC Dart Packages",
@@ -38,7 +39,7 @@
 			"matchPackageNames": ["ac_*"],
 			"automerge": true,
 			"automergeType": "branch",
-			"automergeSchedule": ["at any time"]
+			"automergeSchedule": ["* * * * *"]
 		},
 		{
 			"groupName": "Base Container Images",
@@ -54,8 +55,7 @@
 				"php"
 			],
 			"automerge": true,
-			"automergeType": "branch",
-			"automergeSchedule": ["at any time"]
+			"automergeType": "branch"
 		}
 	]
 }
