@@ -5,9 +5,20 @@ pre-commit:
   parallel: true
   commands:
     tsc:
-      glob: "*.{ts,tsx,cts,mts}"
+      glob:
+        - "*.{ts,tsx,cts,mts}"
+        - "tsconfig*.json"
+        - "package.json"
+        - "yarn.lock"
       # scan the whole project (cf. https://github.com/microsoft/TypeScript/issues/27379)
-      run: yarn run tsc:check
+      run: |
+        if yarn run --json 2>/dev/null | jq -e 'select(.name == "tsc:check")' > /dev/null; then
+          yarn tsc:check
+        elif yarn run --json 2>/dev/null | jq -e 'select(.name == "lint-ts")' > /dev/null; then
+          yarn lint-ts
+        else
+          echo "No tsc check script found in package.json, skipping type checking"
+        fi
     biome:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
       run: yarn exec biome check --error-on-warnings --no-errors-on-unmatched {staged_files}
