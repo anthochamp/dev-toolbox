@@ -60,7 +60,7 @@ jobs:
       version-already-exists: ${{ steps.check-full-version.outputs.RESULT }}
     steps:
       - name: Log into Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           username: ${{ secrets.dhub-username }}
           password: ${{ secrets.dhub-password }}
@@ -143,7 +143,7 @@ jobs:
       description: ${{ steps.package-json-desc.outputs.VALUE }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.checkout-ref }}
 
