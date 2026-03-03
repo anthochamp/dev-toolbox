@@ -1,9 +1,8 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
-		"config:js-app",
 		"github>anthochamp/dev-toolbox//config-presets/renovate/base",
-		"customManagers:biomeVersions",
-		":automergeTypes"
+		"github>anthochamp/dev-toolbox//config-presets/renovate/js-common",
+		":pinAllExceptPeerDependencies"
 	]
 }

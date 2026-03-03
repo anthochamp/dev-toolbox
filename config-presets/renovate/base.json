@@ -3,17 +3,17 @@
 	"extends": [
 		"config:best-practices",
 		":automergeLinters",
-		":automergeStableNonMajor",
+		":automergeMinor",
+		":automergePatch",
 		":combinePatchMinorReleases",
 		":disableRateLimiting",
 		":rebaseStalePrs",
 		":respectLatest",
 		"mergeConfidence:all-badges",
-		":prConcurrentLimitNone",
 		"group:allNonMajor",
 		"group:allDigest",
 		"schedule:automergeWeekends",
-		"schedule:weekly"
+		"schedule:daily"
 	],
 	"labels": ["dependencies"],
 	"packageRules": [

@@ -2,7 +2,8 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
 		"github>anthochamp/dev-toolbox//config-presets/renovate/base",
-		"github>anthochamp/dev-toolbox//config-presets/renovate/js-app"
+		"github>anthochamp/dev-toolbox//config-presets/renovate/js-common",
+		"customManagers:dockerfileVersions"
 	],
 	"packageRules": [
 		{
