@@ -2,9 +2,11 @@
 set -eux
 
 if grep -q 'sdk: flutter' pubspec.yaml 2>/dev/null; then
-	flutter clean
-	flutter pub get
+	runtime=flutter
 else
-	rm -rf build .dart_tool
-	dart pub get
+	runtime=dart
+fi
+
+if ls -A test >/dev/null 2>&1; then
+	"$runtime" test
 fi
