@@ -1,12 +1,14 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["github>anthochamp/dev-toolbox//config-presets/renovate/base"],
+	"extends": [
+		"github>anthochamp/dev-toolbox//config-presets/renovate/base"
+	],
 	"customManagers": [
 		{
 			"customType": "regex",
-			"fileMatch": [
-				"^\.github/workflows/linter-.+\.yml$",
-				"^config-presets/lefthook/(hadolint|markdownlint|shellcheck)\.yaml$"
+			"managerFilePatterns": [
+				"/^.github/workflows/linter-.+.yml$/",
+				"/^config-presets/lefthook/(hadolint|markdownlint|shellcheck).yaml$/"
 			],
 			"matchStrings": [
 				"[ /](?<depName>[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*):(?<currentValue>v[0-9]+(?:\\.[0-9]+)*)"
@@ -17,8 +19,14 @@
 	"packageRules": [
 		{
 			"groupName": "Linting tools",
-			"matchDatasources": ["docker"],
-			"matchPackageNames": ["hadolint/hadolint", "davidanson/markdownlint-cli2", "koalaman/shellcheck"],
+			"matchDatasources": [
+				"docker"
+			],
+			"matchPackageNames": [
+				"hadolint/hadolint",
+				"davidanson/markdownlint-cli2",
+				"koalaman/shellcheck"
+			],
 			"automerge": true
 		}
 	]
