@@ -1,0 +1,24 @@
+extends:
+  - common.yaml
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.go"
+      run: |
+        unformatted=$(gofmt -l {staged_files})
+        if [ -n "$unformatted" ]; then
+          echo "Unformatted files:"
+          echo "$unformatted"
+          exit 1
+        fi
+    vet:
+      glob: "*.go"
+      # scan the whole package (cf. https://pkg.go.dev/cmd/vet)
+      run: go vet ./...
+
+pre-push:
+  commands:
+    test:
+      run: go test ./...

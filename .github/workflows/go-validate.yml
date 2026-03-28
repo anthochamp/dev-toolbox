@@ -1,0 +1,33 @@
+name: Validate a Go project
+
+on:
+  workflow_call:
+    inputs:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
+      package-dir:
+        description: Directory within the repository where the package is located
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  common-lint:
+    uses: ./.github/workflows/common-lint.yml
+    with:
+      node-package-manager: none
+
+  go-lint:
+    uses: ./.github/workflows/go-lint.yml
+    with:
+      checkout-ref: ${{ inputs.checkout-ref }}
+      package-dir: ${{ inputs.package-dir }}
+
+  go-test:
+    uses: ./.github/workflows/go-test.yml
+    with:
+      checkout-ref: ${{ inputs.checkout-ref }}
+      package-dir: ${{ inputs.package-dir }}
