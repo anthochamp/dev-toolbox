@@ -1,0 +1,187 @@
+name: Bump project version
+
+on:
+  workflow_call:
+    inputs:
+      version-file-type:
+        description: "Type of version file: pubspec | package-json | galaxy | version-file"
+        required: true
+        type: string
+      version-file:
+        description: "Path to the version file relative to working-dir (auto-detected when empty)"
+        required: false
+        type: string
+        default: ""
+      bump:
+        description: "Version component to bump: major | minor | patch (ignored when version is set)"
+        required: false
+        type: string
+        default: "patch"
+      version:
+        description: "Explicit new version to set (overrides bump when provided)"
+        required: false
+        type: string
+        default: ""
+      working-dir:
+        description: "Directory containing the version file"
+        required: false
+        type: string
+        default: "."
+      commit:
+        description: "Commit and push the version change"
+        required: false
+        type: boolean
+        default: true
+      branch:
+        description: "Branch to create (or switch to) before committing; current branch used when empty"
+        required: false
+        type: string
+        default: ""
+    outputs:
+      old-version:
+        description: "Version before bumping"
+        value: ${{ jobs.bump.outputs.old-version }}
+      new-version:
+        description: "Version after bumping"
+        value: ${{ jobs.bump.outputs.new-version }}
+      branch:
+        description: "Branch that received the commit"
+        value: ${{ jobs.bump.outputs.branch }}
+      sha:
+        description: "Full SHA of the bump commit (empty when commit is false)"
+        value: ${{ jobs.bump.outputs.sha }}
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      old-version: ${{ steps.bump.outputs.old-version }}
+      new-version: ${{ steps.bump.outputs.new-version }}
+      branch: ${{ steps.bump.outputs.branch }}
+      sha: ${{ steps.bump.outputs.sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Bump version
+        id: bump
+        env:
+          VERSION_FILE_TYPE: ${{ inputs.version-file-type }}
+          VERSION_FILE: ${{ inputs.version-file }}
+          BUMP: ${{ inputs.bump }}
+          EXPLICIT_VERSION: ${{ inputs.version }}
+          WORKING_DIR: ${{ inputs.working-dir }}
+          DO_COMMIT: ${{ inputs.commit }}
+          TARGET_BRANCH: ${{ inputs.branch }}
+        run: |
+          cd "$WORKING_DIR"
+
+          # Resolve default version file path
+          if [ -z "$VERSION_FILE" ]; then
+            case "$VERSION_FILE_TYPE" in
+              pubspec)      VERSION_FILE="pubspec.yaml" ;;
+              package-json) VERSION_FILE="package.json" ;;
+              galaxy)       VERSION_FILE="galaxy.yml" ;;
+              version-file) VERSION_FILE="VERSION" ;;
+              *)
+                echo "::error::Unknown version-file-type: ${VERSION_FILE_TYPE}"
+                exit 1
+                ;;
+            esac
+          fi
+
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "::error::Version file not found: $VERSION_FILE"
+            exit 1
+          fi
+
+          # Read current version
+          case "$VERSION_FILE_TYPE" in
+            pubspec|galaxy)
+              OLD_VERSION=$(grep '^version:' "$VERSION_FILE" | awk '{print $2}')
+              ;;
+            package-json)
+              OLD_VERSION=$(jq -r '.version' "$VERSION_FILE")
+              ;;
+            version-file)
+              OLD_VERSION=$(cat "$VERSION_FILE" | tr -d '[:space:]')
+              ;;
+          esac
+
+          if [ -z "$OLD_VERSION" ]; then
+            echo "::error::Could not read version from ${VERSION_FILE}"
+            exit 1
+          fi
+
+          echo "::notice::Current version: ${OLD_VERSION}"
+
+          # Compute new version
+          if [ -n "$EXPLICIT_VERSION" ]; then
+            NEW_VERSION="$EXPLICIT_VERSION"
+          else
+            IFS='.' read -r V_MAJOR V_MINOR V_PATCH <<< "$OLD_VERSION"
+            case "$BUMP" in
+              major)
+                NEW_VERSION="$((V_MAJOR + 1)).0.0"
+                ;;
+              minor)
+                NEW_VERSION="${V_MAJOR}.$((V_MINOR + 1)).0"
+                ;;
+              patch)
+                NEW_VERSION="${V_MAJOR}.${V_MINOR}.$((V_PATCH + 1))"
+                ;;
+              *)
+                echo "::error::Unknown bump type: ${BUMP} (must be major, minor, or patch)"
+                exit 1
+                ;;
+            esac
+          fi
+
+          echo "::notice::New version: ${NEW_VERSION}"
+
+          # Write new version
+          case "$VERSION_FILE_TYPE" in
+            pubspec|galaxy)
+              sed -i "s/^version: .*/version: ${NEW_VERSION}/" "$VERSION_FILE"
+              ;;
+            package-json)
+              # Use a temporary file to avoid issues with in-place jq editing
+              TMP=$(mktemp)
+              jq --arg v "$NEW_VERSION" '.version = $v' "$VERSION_FILE" > "$TMP"
+              mv "$TMP" "$VERSION_FILE"
+              ;;
+            version-file)
+              echo "$NEW_VERSION" > "$VERSION_FILE"
+              ;;
+          esac
+
+          # Resolve branch
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          RESULT_BRANCH="$CURRENT_BRANCH"
+
+          if [ -n "$TARGET_BRANCH" ]; then
+            git checkout -B "$TARGET_BRANCH"
+            RESULT_BRANCH="$TARGET_BRANCH"
+          fi
+
+          # Commit and push
+          if [ "$DO_COMMIT" = "true" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "$VERSION_FILE"
+            git commit -m "chore: bump version to ${NEW_VERSION}"
+            git push --force-with-lease origin "$RESULT_BRANCH"
+            COMMIT_SHA=$(git rev-parse HEAD)
+          else
+            COMMIT_SHA=""
+          fi
+
+          echo "old-version=${OLD_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "new-version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "branch=${RESULT_BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,187 @@
+name: Publish a Node.js library
+
+on:
+  workflow_call:
+    inputs:
+      node-package-manager:
+        description: "Node.js package manager to use: npm | yarn | pnpm"
+        required: true
+        type: string
+      node-version-file:
+        description: "File containing the Node.js version spec (e.g., .nvmrc)"
+        required: false
+        type: string
+        default: ".nvmrc"
+      working-dir:
+        description: "Directory containing the package or monorepo root"
+        required: false
+        type: string
+        default: "."
+      dry-run:
+        description: "Publish in dry-run mode without pushing to the registry"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      npm-token:
+        required: true
+    outputs:
+      published-tags:
+        description: "Newline-separated list of git tags for published packages (e.g., misc-util_v1.2.3)"
+        value: ${{ jobs.publish.outputs.published-tags }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      published-tags: ${{ steps.publish.outputs.published-tags }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install and enable corepack
+        if: inputs.node-package-manager == 'yarn'
+        run: |
+          npm install -g corepack
+          corepack enable
+
+      - name: Setup pnpm
+        if: inputs.node-package-manager == 'pnpm'
+        uses: pnpm/action-setup@a7487ba4b4b7bc26b1ed4be4e4b4bf5c40be00d4 # v4.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: ${{ inputs.node-version-file }}
+          cache: ${{ inputs.node-package-manager }}
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies (yarn)
+        if: inputs.node-package-manager == 'yarn'
+        run: yarn install
+        working-directory: ${{ inputs.working-dir }}
+
+      - name: Install dependencies (npm)
+        if: inputs.node-package-manager == 'npm'
+        run: npm ci
+        working-directory: ${{ inputs.working-dir }}
+
+      - name: Install dependencies (pnpm)
+        if: inputs.node-package-manager == 'pnpm'
+        run: pnpm install --frozen-lockfile
+        working-directory: ${{ inputs.working-dir }}
+
+      - name: Publish packages
+        id: publish
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.npm-token }}
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+          PM: ${{ inputs.node-package-manager }}
+          WORK_DIR: ${{ inputs.working-dir }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          cd "$WORK_DIR"
+
+          IS_MONOREPO=$(jq -r 'if .workspaces then "true" else "false" end' package.json)
+
+          get_workspace_dirs() {
+            case "$PM" in
+              yarn)
+                yarn workspaces list --json | jq -r 'select(.location != ".") | .location'
+                ;;
+              npm)
+                npm query .workspace | jq -r --arg pwd "$(pwd)" '.[].realpath | ltrimstr($pwd + "/")'
+                ;;
+              pnpm)
+                pnpm list -r --json | jq -r --arg pwd "$(pwd)" '.[].path | select(. != $pwd) | ltrimstr($pwd + "/")'
+                ;;
+            esac
+          }
+
+          publish_package() {
+            local pkg_dir="$1"
+            local pkg_name
+            local pkg_version
+            local dry_run_flag=""
+
+            pkg_name=$(jq -r '.name' "${pkg_dir}/package.json")
+            pkg_version=$(jq -r '.version' "${pkg_dir}/package.json")
+            local is_private
+            is_private=$(jq -r '.private // false' "${pkg_dir}/package.json")
+
+            if [ "$is_private" = "true" ]; then
+              echo "::notice::Skipping private package: ${pkg_name}"
+              return 0
+            fi
+
+            # Check if this version is already published
+            if npm view "${pkg_name}@${pkg_version}" > /dev/null 2>&1; then
+              echo "::notice::${pkg_name}@${pkg_version} already published, skipping"
+              return 0
+            fi
+
+            if [ "$DRY_RUN" = "true" ]; then
+              dry_run_flag="--dry-run"
+            fi
+
+            echo "::notice::Publishing ${pkg_name}@${pkg_version}"
+
+            case "$PM" in
+              yarn)
+                yarn workspace "$pkg_name" npm publish $dry_run_flag
+                ;;
+              npm)
+                (cd "$pkg_dir" && npm publish $dry_run_flag)
+                ;;
+              pnpm)
+                pnpm --filter "$pkg_name" publish --no-git-checks $dry_run_flag
+                ;;
+            esac
+
+            # Derive git tag from package name and version
+            local pkg_id="${pkg_name##*/}"  # strip scope prefix if present
+            echo "${pkg_id}_v${pkg_version}"
+          }
+
+          PUBLISHED_TAGS=""
+
+          if [ "$IS_MONOREPO" = "true" ]; then
+            while IFS= read -r ws_dir; do
+              TAG=$(publish_package "$ws_dir")
+              if [ -n "$TAG" ]; then
+                PUBLISHED_TAGS="${PUBLISHED_TAGS}${TAG}"$'\n'
+              fi
+            done < <(get_workspace_dirs)
+          else
+            pkg_name=$(jq -r '.name' package.json)
+            pkg_version=$(jq -r '.version' package.json)
+            is_private=$(jq -r '.private // false' package.json)
+
+            if [ "$is_private" != "true" ] && ! npm view "${pkg_name}@${pkg_version}" > /dev/null 2>&1; then
+              dry_run_flag=""
+              if [ "$DRY_RUN" = "true" ]; then
+                dry_run_flag="--dry-run"
+              fi
+              echo "::notice::Publishing ${pkg_name}@${pkg_version}"
+              case "$PM" in
+                yarn) yarn npm publish $dry_run_flag ;;
+                npm)  npm publish $dry_run_flag ;;
+                pnpm) pnpm publish --no-git-checks $dry_run_flag ;;
+              esac
+              pkg_id="${pkg_name##*/}"
+              PUBLISHED_TAGS="v${pkg_version}"
+            else
+              echo "::notice::${pkg_name}@${pkg_version} already published or private, skipping"
+            fi
+          fi
+
+          # Trim trailing newline and write output
+          PUBLISHED_TAGS="${PUBLISHED_TAGS%$'\n'}"
+          {
+            echo "published-tags<<EOF"
+            echo "$PUBLISHED_TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"

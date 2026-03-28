@@ -1,0 +1,87 @@
+name: Create a GitHub Release
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: "Git tag to create the release for (creates the tag if it does not exist)"
+        required: true
+        type: string
+      title:
+        description: "Release title (defaults to the tag value)"
+        required: false
+        type: string
+        default: ""
+      notes:
+        description: "Release notes text (when empty, GitHub auto-generates notes from PRs and commits)"
+        required: false
+        type: string
+        default: ""
+      files:
+        description: "Glob pattern for files to attach as release assets"
+        required: false
+        type: string
+        default: ""
+      draft:
+        description: "Create as draft release"
+        required: false
+        type: boolean
+        default: false
+      prerelease:
+        description: "Mark as pre-release"
+        required: false
+        type: boolean
+        default: false
+      target:
+        description: "Commit SHA or branch to create the tag from (defaults to the HEAD of the default branch)"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="${{ inputs.title }}"
+          if [ -z "$TITLE" ]; then
+            TITLE="${{ inputs.tag }}"
+          fi
+
+          ARGS=("${{ inputs.tag }}" "--title" "$TITLE")
+
+          if [ -n "${{ inputs.notes }}" ]; then
+            ARGS+=("--notes" "${{ inputs.notes }}")
+          else
+            ARGS+=("--generate-notes")
+          fi
+
+          if [ "${{ inputs.draft }}" = "true" ]; then
+            ARGS+=("--draft")
+          fi
+
+          if [ "${{ inputs.prerelease }}" = "true" ]; then
+            ARGS+=("--prerelease")
+          fi
+
+          if [ -n "${{ inputs.target }}" ]; then
+            ARGS+=("--target" "${{ inputs.target }}")
+          fi
+
+          if [ -n "${{ inputs.files }}" ]; then
+            # shellcheck disable=SC2206 # glob expansion is intentional
+            ARGS+=(${{ inputs.files }})
+          fi
+
+          gh release create "${ARGS[@]}"
