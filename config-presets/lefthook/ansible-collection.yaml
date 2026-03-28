@@ -1,0 +1,11 @@
+extends:
+  - common.yaml
+
+pre-commit:
+  parallel: true
+  commands:
+    ansible-lint:
+      glob: "**/*.{yml,yaml}"
+      # ansible-lint runs on the whole project — it resolves role includes/imports
+      # and cannot lint individual files without full context
+      run: ansible-lint

@@ -1,0 +1,105 @@
+name: Publish Ansible collections to Ansible Galaxy
+
+on:
+  workflow_call:
+    inputs:
+      collections-root:
+        description: "Root directory containing the ansible_collections/ tree"
+        required: false
+        type: string
+        default: "."
+      dry-run:
+        description: "Build collections but skip publishing to Ansible Galaxy"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      ansible-galaxy-token:
+        required: true
+    outputs:
+      published-tags:
+        description: "Newline-separated list of git tags for published collections (e.g., anthochamp.system_v1.2.3)"
+        value: ${{ jobs.publish.outputs.published-tags }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      published-tags: ${{ steps.publish.outputs.published-tags }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.x"
+
+      - name: Install ansible-core
+        run: pip install ansible-core
+
+      - name: Publish collections
+        id: publish
+        env:
+          ANSIBLE_GALAXY_TOKEN: ${{ secrets.ansible-galaxy-token }}
+          COLLECTIONS_ROOT: ${{ inputs.collections-root }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          PUBLISHED_TAGS=""
+
+          # Find all galaxy.yml files at depth ansible_collections/<namespace>/<name>/galaxy.yml
+          while IFS= read -r GALAXY_YML; do
+            COLLECTION_DIR=$(dirname "$GALAXY_YML")
+            NAMESPACE=$(basename "$(dirname "$COLLECTION_DIR")")
+            COLLECTION_NAME=$(basename "$COLLECTION_DIR")
+            VERSION=$(grep '^version:' "$GALAXY_YML" | awk '{print $2}')
+
+            if [ -z "$VERSION" ]; then
+              echo "::warning::Could not read version from ${GALAXY_YML}, skipping"
+              continue
+            fi
+
+            echo "::notice::Checking ${NAMESPACE}.${COLLECTION_NAME} v${VERSION}"
+
+            # Check if this version already exists on Ansible Galaxy
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" \
+              "https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/index/${NAMESPACE}/${COLLECTION_NAME}/versions/${VERSION}/" \
+              2>/dev/null || echo "000")
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "::notice::${NAMESPACE}.${COLLECTION_NAME} v${VERSION} already on Galaxy, skipping"
+              continue
+            fi
+
+            # Build the collection tarball
+            (cd "$COLLECTION_DIR" && ansible-galaxy collection build --output-path /tmp/collection-build)
+
+            TARBALL=$(ls /tmp/collection-build/${NAMESPACE}-${COLLECTION_NAME}-${VERSION}.tar.gz 2>/dev/null)
+            if [ -z "$TARBALL" ]; then
+              echo "::error::Collection tarball not found after build for ${NAMESPACE}.${COLLECTION_NAME}"
+              exit 1
+            fi
+
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "::notice::[dry-run] Would publish ${NAMESPACE}.${COLLECTION_NAME} v${VERSION}"
+            else
+              ansible-galaxy collection publish "$TARBALL" --token "$ANSIBLE_GALAXY_TOKEN"
+              echo "::notice::Published ${NAMESPACE}.${COLLECTION_NAME} v${VERSION}"
+            fi
+
+            PUBLISHED_TAGS="${PUBLISHED_TAGS}${NAMESPACE}.${COLLECTION_NAME}_v${VERSION}"$'\n'
+
+            # Clean up for next iteration
+            rm -f "$TARBALL"
+          done < <(find "${COLLECTIONS_ROOT}/ansible_collections" -name "galaxy.yml" -mindepth 3 -maxdepth 3 | sort)
+
+          # Trim trailing newline and write output
+          PUBLISHED_TAGS="${PUBLISHED_TAGS%$'\n'}"
+          {
+            echo "published-tags<<EOF"
+            echo "$PUBLISHED_TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"

@@ -1,0 +1,28 @@
+name: Validate an Ansible collection
+
+on:
+  workflow_call:
+    inputs:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Defaults to the reference or SHA for that event.
+        required: false
+        type: string
+      working-dir:
+        description: Directory within the repository where the project is located
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  common-lint:
+    uses: ./.github/workflows/common-lint.yml
+    with:
+      node-package-manager: none
+      working-dir: ${{ inputs.working-dir }}
+
+  ansible-lint:
+    uses: ./.github/workflows/linter-ansible-lint.yml
+    with:
+      checkout-ref: ${{ inputs.checkout-ref }}
+      working-dir: ${{ inputs.working-dir }}
