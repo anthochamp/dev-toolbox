@@ -28,6 +28,8 @@ on:
 jobs:
   markdownlint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -61,5 +63,5 @@ jobs:
 
       - name: Lint Markdown files
         shell: bash # ensure
-        run: shopt -s globstar && docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2:v0.17.2 '**/*.md'
+        run: shopt -s globstar && docker --context default run --rm -v $(pwd):/workdir davidanson/markdownlint-cli2:v0.20.0 '**/*.md'
         working-directory: ${{ inputs.working-dir }}

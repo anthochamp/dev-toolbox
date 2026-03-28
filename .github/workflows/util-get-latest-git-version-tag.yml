@@ -21,6 +21,8 @@ on:
 jobs:
   get-latest-git-version-tag:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       tag: ${{ steps.git-tagged-version.outputs.TAG }}
       version: ${{ steps.git-tagged-version.outputs.VERSION }}

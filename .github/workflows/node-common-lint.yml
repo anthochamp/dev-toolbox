@@ -28,6 +28,8 @@ on:
 jobs:
   node-common-lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -42,6 +44,7 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           node-version-file: ${{ inputs.node-version-file }}
+          cache: ${{ inputs.node-package-manager }}
 
       - name: Install dependencies (NPM)
         if: ${{ inputs.node-package-manager == 'npm' }}

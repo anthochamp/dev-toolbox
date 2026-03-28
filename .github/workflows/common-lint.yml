@@ -20,6 +20,8 @@ on:
         required: false
         type: string
 
+permissions: {}
+
 jobs:
   markdownlint:
     uses: ./.github/workflows/linter-markdownlint.yml

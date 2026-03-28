@@ -12,6 +12,8 @@ on:
         required: false
         type: string
 
+permissions: {}
+
 jobs:
   common-lint:
     uses: ./.github/workflows/common-lint.yml
