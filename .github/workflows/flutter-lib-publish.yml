@@ -64,7 +64,6 @@ jobs:
         run: |
           gcloud auth print-identity-token \
             --audiences=https://pub.dev \
-            --include-email \
           | dart pub token add https://pub.dev
 
       - name: Read package version
