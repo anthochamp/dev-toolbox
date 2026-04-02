@@ -62,6 +62,7 @@ jobs:
           credentials_json: ${{ secrets.gcp-service-account-key }}
           token_format: id_token
           id_token_audience: https://pub.dev
+          id_token_include_email: true
           create_credentials_file: false
 
       - name: Add pub.dev token
