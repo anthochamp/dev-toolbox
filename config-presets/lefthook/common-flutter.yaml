@@ -5,6 +5,11 @@ pre-push:
   commands:
     test:
       run: |
+        if command -v fvm >/dev/null 2>&1; then
+          _flutter() { fvm flutter "$@"; }
+        else
+          _flutter() { flutter "$@"; }
+        fi
         if ls -A test &>/dev/null; then
-          flutter test
+          _flutter test
         fi

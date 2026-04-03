@@ -6,13 +6,30 @@ pre-commit:
   commands:
     format:
       glob: "*.{dart}"
-      run: dart format --output=none --set-exit-if-changed ${staged_files}
+      run: |
+        if command -v fvm >/dev/null 2>&1; then
+          _dart() { fvm dart "$@"; }
+        else
+          _dart() { dart "$@"; }
+        fi
+        _dart format --output=none --set-exit-if-changed ${staged_files}
     analyze:
       glob: "*.{dart}"
-      run: dart analyze --fatal-infos {staged_files}
+      run: |
+        if command -v fvm >/dev/null 2>&1; then
+          _dart() { fvm dart "$@"; }
+        else
+          _dart() { dart "$@"; }
+        fi
+        _dart analyze --fatal-infos {staged_files}
     ac_code_metrics:
       glob: "*.{dart}"
       run: |
-        if dart pub deps --executables | grep -q ac_code_metrics; then
-          dart run ac_code_metrics:metrics analyze {staged_files}
+        if command -v fvm >/dev/null 2>&1; then
+          _dart() { fvm dart "$@"; }
+        else
+          _dart() { dart "$@"; }
+        fi
+        if _dart pub deps --executables | grep -q ac_code_metrics; then
+          _dart run ac_code_metrics:metrics analyze {staged_files}
         fi

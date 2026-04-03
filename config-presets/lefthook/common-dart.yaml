@@ -5,6 +5,11 @@ pre-push:
   commands:
     test:
       run: |
+        if command -v fvm >/dev/null 2>&1; then
+          _dart() { fvm dart "$@"; }
+        else
+          _dart() { dart "$@"; }
+        fi
         if ls -A test &>/dev/null; then
-          dart test
+          _dart test
         fi
