@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 set -eux
 
+if command -v fvm >/dev/null 2>&1; then
+	dart() { fvm dart "$@"; }
+else
+	dart() { command dart "$@"; }
+fi
+
 if ! dart format --output=none --set-exit-if-changed .; then
 	echo Linting failed.
 	exit 1
