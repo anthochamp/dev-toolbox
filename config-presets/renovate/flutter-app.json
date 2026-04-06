@@ -3,5 +3,12 @@
 	"extends": [
 		"github>anthochamp/dev-toolbox//config-presets/renovate/base",
 		"github>anthochamp/dev-toolbox//config-presets/renovate/dart-common"
+	],
+	"packageRules": [
+		{
+			"matchDatasources": ["gradle-version", "maven"],
+			"matchPackageNames": ["dev.flutter.flutter-plugin-loader"],
+			"enabled": false
+		}
 	]
 }
