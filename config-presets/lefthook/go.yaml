@@ -6,13 +6,8 @@ pre-commit:
   commands:
     format:
       glob: "*.go"
-      run: |
-        unformatted=$(gofmt -l {staged_files})
-        if [ -n "$unformatted" ]; then
-          echo "Unformatted files:"
-          echo "$unformatted"
-          exit 1
-        fi
+      stage_fixed: true
+      run: gofmt -w {staged_files}
     vet:
       glob: "*.go"
       # scan the whole package (cf. https://pkg.go.dev/cmd/vet)

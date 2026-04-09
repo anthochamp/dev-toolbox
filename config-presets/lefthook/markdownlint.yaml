@@ -3,4 +3,5 @@ pre-commit:
   commands:
     markdownlint:
       glob: "*.md"
-      run: docker --context default run --rm -v $(pwd):/workdir:z davidanson/markdownlint-cli2:v0.20.0 --no-globs {staged_files}
+      stage_fixed: true
+      run: docker --context default run --rm -v $(pwd):/workdir:z davidanson/markdownlint-cli2:v0.20.0 --fix --no-globs {staged_files}

@@ -8,4 +8,4 @@ pre-commit:
       glob: "**/*.{yml,yaml}"
       # ansible-lint runs on the whole project — it resolves role includes/imports
       # and cannot lint individual files without full context
-      run: ansible-lint
+      run: ansible-lint --fix

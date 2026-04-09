@@ -21,7 +21,8 @@ pre-commit:
         fi
     biome:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npm exec -- biome check --error-on-warnings --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+      run: npm exec -- biome check --write --error-on-warnings --no-errors-on-unmatched {staged_files}
 
 pre-push:
   commands:
