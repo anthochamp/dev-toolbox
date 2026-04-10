@@ -52,6 +52,9 @@ on:
 concurrency:
   group: ${{ inputs.container-image-name }}
 
+permissions:
+  contents: read
+
 jobs:
   check-version:
     if: ${{ inputs.version != '' }}
