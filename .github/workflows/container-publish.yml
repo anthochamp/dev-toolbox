@@ -129,8 +129,26 @@ jobs:
           VERSION: ${{ inputs.version }}
           ALT_VERSION: ${{ inputs.alt-version }}
 
+  get-description:
+    runs-on: ubuntu-latest
+    outputs:
+      description: ${{ steps.read.outputs.DESCRIPTION }}
+      author: ${{ steps.read.outputs.AUTHOR }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.checkout-ref }}
+
+      - name: Extract metadata from package.json
+        id: read
+        run: |
+          echo "DESCRIPTION=$(jq -r '.description // ""' package.json)" >> "$GITHUB_OUTPUT"
+          echo "AUTHOR=$(jq -r '.author // ""' package.json)" >> "$GITHUB_OUTPUT"
+        working-directory: ${{ inputs.working-dir || '.' }}
+
   container-build-n-push:
-    needs: compose-container-tags
+    needs: [compose-container-tags, get-description]
     if: ${{ needs.compose-container-tags.outputs.has-container-tags-enabled == 'true' }}
     uses: ./.github/workflows/container-build-n-push.yml
     with:
@@ -139,39 +157,24 @@ jobs:
       container-image-name: ${{ inputs.container-image-name }}
       container-tags: ${{ needs.compose-container-tags.outputs.container-tags }}
       build-platforms: ${{ inputs.build-platforms }}
+      description: ${{ needs.get-description.outputs.description }}
+      authors: ${{ needs.get-description.outputs.author }}
     secrets:
       dhub-username: ${{ secrets.dhub-username }}
       dhub-password: ${{ secrets.dhub-password }}
       ghcr-username: ${{ secrets.ghcr-username }}
       ghcr-password: ${{ secrets.ghcr-password }}
 
-  get-docker-hub-repo-desc:
-    needs: container-build-n-push
-    if: ${{ inputs.dhub-readme-file != '' && github.ref_type == 'tag' }}
-    runs-on: ubuntu-latest
-    outputs:
-      description: ${{ steps.package-json-desc.outputs.VALUE }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ inputs.checkout-ref }}
-
-      - name: Extract description from package.json
-        id: package-json-desc
-        run: echo "VALUE=$(cat package.json | jq '.description | select (.!=null)')"
-        working-directory: ${{ inputs.working-dir }}
-
   update-docker-hub-repo-info:
-    needs: get-docker-hub-repo-desc
+    needs: [container-build-n-push, get-description]
     # underlying default readme-file value forbids us to test either readme-file
     # or short-desc: readme-file will always be set to README.md if empty.
-    if: ${{ inputs.dhub-readme-file != '' }}
+    if: ${{ inputs.dhub-readme-file != '' && github.ref_type == 'tag' }}
     uses: ./.github/workflows/util-update-docker-hub-repo-info.yml
     with:
       checkout-ref: ${{ inputs.checkout-ref }}
       readme-file: ${{ inputs.dhub-readme-file }}
-      short-description: ${{ needs.get-docker-hub-repo-desc.outputs.description }}
+      short-description: ${{ needs.get-description.outputs.description }}
     secrets:
       username: ${{ secrets.dhub-username }}
       password: ${{ secrets.dhub-password }}
