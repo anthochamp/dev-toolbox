@@ -54,6 +54,8 @@ concurrency:
 
 permissions:
   contents: read
+  packages: write
+  id-token: write # passed through to container-build-n-push for GHCR push and cosign signing
 
 jobs:
   check-version:
