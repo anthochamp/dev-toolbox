@@ -1,6 +1,6 @@
 ---
 name: Ansible Collection Authoring
-description: Conventions for structuring and packaging Ansible collections
+description: Rules and conventions for all Ansible collection work — directory structure, content packaging, and metadata conventions
 applyTo: "**/*.{yml,yaml}"
 ---
 

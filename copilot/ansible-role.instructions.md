@@ -1,6 +1,6 @@
 ---
 name: Ansible Role & Collection Authoring
-description: Authoring generic, publishable Ansible roles and collections respecting tool philosophies
+description: Rules and conventions for all Ansible role and collection work — generic, publishable design respecting tool philosophies
 applyTo: "**/*.{yml,yaml,j2}"
 ---
 

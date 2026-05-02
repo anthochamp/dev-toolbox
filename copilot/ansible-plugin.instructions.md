@@ -1,6 +1,6 @@
 ---
 name: Ansible Plugin Authoring
-description: Python coding guidelines for authoring Ansible plugins and modules
+description: Rules and conventions for all Ansible plugin and module Python code — coding style, argument specs, documentation, and testing
 applyTo: "**/*.py"
 ---
 

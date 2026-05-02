@@ -1,6 +1,6 @@
 ---
 name: Shell Script Guidelines
-description: POSIX shell scripting conventions, portability rules, error handling, and ShellCheck usage
+description: Rules and conventions for all shell script code — POSIX portability, error handling, style conventions, and ShellCheck usage
 applyTo: "**/*.{sh,inc.sh}"
 ---
 
@@ -132,108 +132,36 @@ Strictly avoid bash-only syntax, since scripts must run under `/bin/sh`:
 | `test -v var` | `[ -n "${var+set}" ]` (checks if var is defined, even if empty) |
 | `$'\t'` / `$'\n'` | Use a here-doc or `printf` to get literal tab/newline |
 
-### Common Portable Patterns
+### Non-Obvious POSIX Patterns
 
-**String contains:**
-
-```sh
-# ✅ POSIX — test if $haystack contains $needle
-case "$haystack" in
-  *"$needle"*) echo found ;;
-esac
-```
-
-**String starts/ends with:**
+**Safely pass optional flags without arrays:**
 
 ```sh
-# starts with
-[ "${var#prefix}" != "$var" ] && echo "has prefix"
-
-# ends with
-[ "${var%suffix}" != "$var" ] && echo "has suffix"
-```
-
-**String length:**
-
-```sh
-length=${#var}
-```
-
-**String to lower/upper (no bashism):**
-
-```sh
-lower=$(printf '%s' "$var" | tr '[:upper:]' '[:lower:]')
-upper=$(printf '%s' "$var" | tr '[:lower:]' '[:upper:]')
-```
-
-**Strip trailing newline from command substitution** (shell does this automatically — do not use `printf '%s'` wrappers unless preserving exact output into a variable):
-
-```sh
-# Shell strips trailing newlines from $() — this is expected
-result=$(command_that_adds_newline)
-```
-
-**Check if a command exists:**
-
-```sh
-if command -v docker >/dev/null 2>&1; then
-  echo "docker available"
-fi
-```
-
-**Default value patterns:**
-
-```sh
-# Use default if unset or empty
-: "${var:=default}"
-
-# Use value only if var is set (non-empty)
-arg=${var:+"--flag=$var"}
-```
-
-**Safely pass optional flags to commands:**
-
-```sh
-# Build flags without arrays
 flags=
 [ "$verbose" -eq 1 ] && flags="$flags --verbose"
 [ -n "$output" ] && flags="$flags --output=$(stringQuoteSQE "$output")"
-# then: eval "command $flags"
-# See sh-essentials process_exec for the quoting helper
+# then: process_exec "command $flags"
 ```
 
-**Arithmetic without (( )):**
+**Test if a variable is set (vs empty):**
 
 ```sh
-n=$(( n + 1 ))
-[ $(( a > b )) -ne 0 ] && echo "a is greater"
-```
-
-**Temporary variable trick to test set-ness (not emptiness):**
-
-```sh
-# Is $var defined at all (even as empty string)?
-[ -n "${var+x}" ] && echo "var is set"
+[ -n "${var+x}" ] && echo "var is set (may be empty)"
 ```
 
 ## Variables
 
-- Always quote variable expansions: `"$var"`, `"$1"`, `"$(cmd)"`.
-- Use `${var:-default}` for safe defaults; `${var:?message}` to fail fast on unset required vars.
-- Declare all function-local variables with `local` at the top of the function.
 - Use `local result=` (initialized empty) rather than bare `local result` to avoid inheriting a value.
-- Assign command substitutions separately from `local` to preserve the exit code:
+- Assign command substitutions separately from `local` — `local` always exits 0, masking failures under `set -e`:
 
   ```sh
-  # ✅ CORRECT — exit code of realpath is preserved
+  # ✅ CORRECT
   local dir
   dir=$(realpath "$1")
 
-  # ❌ WRONG — local always exits 0, so set -e won't catch realpath failure
+  # ❌ WRONG — realpath failure is silently swallowed
   local dir=$(realpath "$1")
   ```
-
-- Use lowercase `snake_case` for all variable names; reserve `UPPER_CASE` for environment variables.
 
 ## Error Handling
 
@@ -249,7 +177,6 @@ die() {
 }
 ```
 
-- Call `die` with a message for user-visible errors; the message goes to stderr.
 - Validate required arguments early with `paramOrDie` / `nonEmptyOrDie` patterns:
 
   ```sh
@@ -277,25 +204,7 @@ if [ "${step_status:-0}" -ne 0 ]; then ...; fi
 local result=$(may_fail)  # local masks the exit code — use two-line form
 ```
 
-- When a command is allowed to fail intentionally, suffix it with `|| true` or capture its status explicitly.
-- Never rely on `$?` after a multi-step pipeline — capture intermediate statuses if needed.
-
-## Output
-
-- **stderr** — diagnostic output: logs, errors, progress messages.
-- **stdout** — data output only: values consumed by callers or pipes.
-- Prefer `printf` over `echo` for reliable, portable output; `echo` behavior varies across shells and platforms:
-
-  ```sh
-  # ✅ CORRECT
-  printf '%s\n' "$value"
-  printf 'Count: %d\n' "$count"
-
-  # ❌ AVOID — echo -e, echo -n are not portable
-  echo -e "line1\nline2"
-  ```
-
-- Use `>&2` to redirect diagnostic output to stderr explicitly.
+- Suffix intentionally fallible commands with `|| true` or capture the exit status explicitly.
 
 ## Argument Parsing
 
@@ -327,7 +236,6 @@ local result=$(may_fail)  # local masks the exit code — use two-line form
   }
   ```
 
-- Prefer long option names (`--flag`) over short ones (`-f`) for clarity; provide both when the short form is conventional.
 - Use `${1:?missing ARGUMENT}` for required positional arguments at the end of `parseArgv`.
 
 ## Temporary Files and Cleanup
@@ -345,12 +253,7 @@ local result=$(may_fail)  # local masks the exit code — use two-line form
   trap 'rm -f "$tmpFile"' EXIT INT HUP TERM
   ```
 
-- When multiple resources need cleanup, chain commands in the trap using semicolons, or call a named `cleanup()` function.
-- To accumulate trap handlers without overwriting previous ones, capture the existing trap before adding:
-
-  ```sh
-  # See sh-essentials trapAdd / trapExit for a portable accumulating trap helper
-  ```
+- To accumulate trap handlers without overwriting previous ones, use sh-essentials `trapExit` / `trapAdd`.
 
 - Never write to `/tmp/fixed-name` — it creates a predictable path exploitable by symlink attacks.
 
@@ -362,19 +265,11 @@ local result=$(may_fail)  # local masks the exit code — use two-line form
   rootDir=$(dirname "$(realpath "$0")")
   ```
 
-- Source library files with `.` (not `source`) for POSIX compatibility:
-
-  ```sh
-  . "$rootDir/lib/utils.inc.sh"
-  ```
-
 - Only source files relative to `$rootDir` — never rely on `PATH` for library files.
 
 ## Functions
 
-- Prefer many small functions with a single responsibility over long monolithic scripts.
 - Use `camelCase` for function names.
-- Keep the main script body at the bottom; define all functions above.
 - Avoid defining functions inside other functions except for local callbacks (e.g., iterator callbacks passed to an array utility).
 
 ## Boolean Values
@@ -396,8 +291,7 @@ local result=$(may_fail)  # local masks the exit code — use two-line form
 
 ## Testing
 
-- Place tests in a `test/` directory alongside source files.
-- Write test scripts that source the library under test and use assertion functions:
+- Test scripts source the library under test and use `assertEq` for assertions; use `set -euv` (`-v` prints each command for easy failure tracing):
 
   ```sh
   #!/usr/bin/env dash
@@ -408,6 +302,3 @@ local result=$(may_fail)  # local masks the exit code — use two-line form
   result=$(myFunction arg1 arg2)
   assertEq "$result" "expected"
   ```
-
-- Use `set -v` in test scripts to print each executed command, making failures easy to trace.
-- Name test files after the module they test: `lang-array.sh` tests `src/lang/array.inc.sh`.

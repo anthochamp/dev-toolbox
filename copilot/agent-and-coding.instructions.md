@@ -1,6 +1,6 @@
 ---
 name: Agent & Coding Guidelines
-description: Cross-language design principles, agent behaviour, implementation process, coding style, and security baseline
+description: Rules and conventions for all code work — cross-language design principles, agent behaviour, implementation process, coding style, and security baseline
 applyTo: "**"
 ---
 
@@ -31,14 +31,7 @@ applyTo: "**"
 
 ## Design Principles
 
-**Every implementation must be the correct long-term design from the start.**
-
-- Placeholders are forbidden: No `todo!()`, `TODO`, `FIXME`, or "implement later" stubs
-- Simplified backing types are forbidden: No "we'll make this generic later" compromises
-- "We'll fix this later" shortcuts are forbidden: Do it right the first time
-- If the correct design requires more thought, **stop and think** — do not ship an easier wrong version
-
-This applies to production code, tests, documentation, configuration files, and scripts.
+No `TODO`/`FIXME`/`todo!()` stubs, no "simplified for now" types, no deferred correctness. Stop and think if the right design requires it — do not ship an easier wrong version.
 
 - Follow SOLID principles for maintainable and scalable code. **[OOP]**
 - Follow DRY (Don't Repeat Yourself) to minimize code duplication.
@@ -47,32 +40,16 @@ This applies to production code, tests, documentation, configuration files, and 
 - In multi-paradigm languages, prefer functional programming over OOP where pure functions are sufficient, unless stated otherwise.
 - Avoid factoring out helper functions unless reused in multiple places; prefer keeping them inline for readability and context, unless extraction significantly improves clarity.
 - Protect concurrency-sensitive code with appropriate synchronization mechanisms (locks, semaphores, etc.); prefer immutable data structures where possible.
-- Profile and optimize performance-critical code.
-- Minimize dependencies (keep them updated) but do not reinvent the wheel unnecessarily.
-- Organize code for maintainability (e.g., group by feature, keep related tests close).
 
 ## Implementation Process
 
-**Before implementing:**
-
-- Read and understand existing code and architecture
-- Identify patterns and conventions already in use
-- Take time to research the correct approach
-
-**During implementation:**
-
-- Use the most appropriate abstraction level from the start
-- Follow established patterns unless there's a compelling reason to deviate
-- Write tests alongside implementation, not after
-- Document complex logic as you write it
-- Prefer editor and IDE tools (file edits, search, rename) over ad-hoc scripts for one-off tasks; write bash or Python scripts only for well-defined, repetitive operations that genuinely benefit from automation
-
-**After implementation:**
-
-- Validate changes using project-specific commands (build, test, lint, type-check)
-- Check for errors, warnings, and type issues
-- Ensure tests pass and coverage is maintained
-- Review diffs for clarity and maintainability
+- Research the correct approach before implementing.
+- Use the most appropriate abstraction level from the start.
+- Follow established patterns unless there's a compelling reason to deviate.
+- Write tests alongside implementation, not after.
+- Document complex logic as you write it.
+- Prefer editor and IDE tools (file edits, search, rename) over ad-hoc scripts; use scripts only for well-defined repetitive operations.
+- Validate with project-specific commands (build, test, lint, type-check); ensure tests pass.
 
 ## Coding Style
 
@@ -82,30 +59,17 @@ This applies to production code, tests, documentation, configuration files, and 
 
 ## Security Baseline
 
-These rules apply universally regardless of language or framework:
-
-- **Never log or expose secrets** — credentials, tokens, private keys, and PII must never appear in logs, error messages, or stack traces.
-- **Validate all external input at system boundaries** — treat data from users, APIs, files, and environment variables as untrusted; validate type, format, and range before use.
-- **Never construct queries or commands from raw input** — use parameterized queries for databases; avoid shell injection by using structured APIs instead of string interpolation in commands.
-- **Avoid unsafe execution primitives** — never use `eval`, `exec`, `Function()`, or equivalent dynamic code execution with user-controlled input.
-- **Avoid unsafe deserialization** — never deserialize untrusted data with formats that allow arbitrary object instantiation (e.g., `pickle`, `YAML.load` without a safe loader).
-- **Keep dependencies reviewed and updated** — audit new dependencies before adding them; prefer well-maintained packages with small, auditable footprints.
-- **Never hardcode secrets in source code** — use environment variables or a secrets manager; `.env` files must be gitignored.
+- **Never log secrets** — credentials, tokens, private keys, and PII must not appear in logs, error messages, or stack traces.
+- **Validate all external input at system boundaries** — treat user data, API responses, files, and env vars as untrusted.
+- **Never construct queries or commands from raw input** — use parameterized queries; avoid shell injection with structured APIs.
+- **Avoid `eval`, `exec`, `Function()`** and any dynamic code execution with user-controlled input.
+- **Avoid unsafe deserialization** — never use `pickle`, `YAML.load` (without safe loader), or equivalent with untrusted data.
+- **Audit new dependencies** before adding — prefer well-maintained packages with small footprints.
+- **Never hardcode secrets** — use env vars or a secrets manager; `.env` must be gitignored.
 
 ## Linter Suppression Policy
-
-Linter suppression comments (`// biome-ignore`, `// eslint-disable`, `# noqa`, etc.) are sometimes necessary but must be used sparingly and responsibly.
 
 - **Always include a justification** on the same line as the suppression. The justification must explain *why* the rule does not apply, not just what the rule is.
 - **Never use file-level suppression** (`biome-ignore-all`, `eslint-disable` without a re-enable) in regular source files — refactor instead.
 - **File-level suppression is allowed in test files only** when the whole file uses a pattern that would otherwise require per-line suppressions throughout (e.g., extensive use of `any` in a fixture-driven test file). Document the reason at the top of the file.
 - **Suppress the narrowest possible scope**: a single line or block, never a surrounding function or module.
-
-## Quality Standards
-
-Prefer solutions that:
-
-- Maintain or improve code quality
-- Are readable and follow established project conventions
-- Are properly tested and documented
-- Consider long-term implications over short-term convenience

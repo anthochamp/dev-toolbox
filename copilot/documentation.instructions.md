@@ -1,6 +1,6 @@
 ---
 name: Documentation Guidelines
-description: Project documentation standards, mandatory artifacts, Markdown formatting, and cross-references to language-specific guides
+description: Rules and conventions for all documentation work — project standards, mandatory artifacts, Markdown formatting, and cross-references to language-specific guides
 applyTo: "**"
 ---
 
@@ -24,11 +24,9 @@ Git commits are the single source of truth for change history. Documentation and
 
 ## Code Documentation
 
-- Write self-documenting code with clear intent
 - Use comments sparingly to explain "why" rather than "what"
 - Document public APIs and complex logic thoroughly
 - Document from a user's perspective — how to use the code, not its implementation details
-- Keep documentation up to date with code changes
 
 **Language-specific conventions:**
 

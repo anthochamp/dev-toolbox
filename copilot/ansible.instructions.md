@@ -1,6 +1,6 @@
 ---
 name: Ansible Playbook & Inventory Guidelines
-description: Ansible playbooks, inventory, and coding style guidelines
+description: Rules and conventions for all Ansible playbook and inventory work — task structure, variable patterns, and coding style
 applyTo: "**/*.{yml,yaml,j2}"
 ---
 

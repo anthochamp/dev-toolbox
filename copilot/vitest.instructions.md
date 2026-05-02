@@ -1,6 +1,6 @@
 ---
 name: Vitest Testing Guidelines
-description: Unit and integration testing patterns, expectations, and mocking with vitest
+description: Rules and conventions for all Vitest test code — unit tests, integration tests, test structure, expectations, and mocking
 applyTo: "**/*.{test,spec}.{ts,tsx,mts,cts,js,mjs,cjs}"
 ---
 
@@ -64,30 +64,16 @@ applyTo: "**/*.{test,spec}.{ts,tsx,mts,cts,js,mjs,cjs}"
   expect(received).toBe(42);
   ```
 
-- Never use `expect` in event handler, callback functions or conditions; instead, use flags or promises to signal test completion.
+- Never use `expect` in callbacks, conditions, or event handlers — use flags or promises to signal test completion.
 
   ```typescript
   // ✅ CORRECT
   let callbackCalled = false;
-  someAsyncFunction(() => {
-    callbackCalled = true;
-  });
+  someAsyncFunction(() => { callbackCalled = true; });
   await waitFor(() => expect(callbackCalled).toBe(true));
 
-  // ❌ WRONG - expect inside callback
-  someAsyncFunction(() => {
-    expect(true).toBe(true); // Avoid this pattern
-  });
-
-  // ❌ WRONG - expect inside condition
-  if (someCondition) {
-    expect(true).toBe(true); // Avoid this pattern
-  }
-
-  // ❌ WRONG - expect inside event handler
-  emitter.on('event', () => {
-    expect(true).toBe(true); // Avoid this pattern
-  });
+  // ❌ WRONG — expect inside a callback, condition, or event handler
+  someAsyncFunction(() => { expect(true).toBe(true); });
   ```
 
 - Never use `toHaveBeenCalled` without verifying the arguments and the call counts; prefer using `toHaveBeenCalledWith` and `toHaveBeenCalledTimes` for more precise assertions.
@@ -101,30 +87,18 @@ applyTo: "**/*.{test,spec}.{ts,tsx,mts,cts,js,mjs,cjs}"
   expect(mockFunction).toHaveBeenCalled();
   ```
 
-- Even in passing test cases, and in particular when testing event emitters or callbacks, always verify the call counts and arguments to ensure correct behavior.
+- When testing event emitters or callbacks, always verify call counts and arguments — use `vi.fn()` for precise assertions:
 
   ```typescript
-  // ✅ CORRECT - BETTER
-  let onError = vi.fn();
+  // ✅ CORRECT
+  const onError = vi.fn();
   server.on('error', onError);
   expect(onError).toHaveBeenCalledTimes(1);
   expect(onError).toHaveBeenCalledWith(expect.any(SpecificError));
 
-  // ✅ CORRECT - OK BUT IMPROVABLE
+  // ❌ WRONG — no call count verified
   let lastErrorReceived: Error | null = null;
-  let errorCalledCount = 0;
-  server.on('error', (error) => {
-    lastErrorReceived = error;
-    errorCalledCount++;
-  });
-  expect(errorCalledCount).toBe(1);
-  expect(lastErrorReceived).toBeInstanceOf(SpecificError);
-
-  // ❌ WRONG - vague call check
-  let lastErrorReceived: Error | null = null;
-  server.on('error', (error) => {
-    lastErrorReceived = error;
-  });
+  server.on('error', (error) => { lastErrorReceived = error; });
   expect(lastErrorReceived).toBeInstanceOf(SpecificError);
   ```
 
@@ -136,26 +110,13 @@ applyTo: "**/*.{test,spec}.{ts,tsx,mts,cts,js,mjs,cjs}"
   someFunctionThatCallsMock(mockFunction);
   expect(mockFunction).toHaveBeenCalledWith(expectedArg);
 
-  // ❌ WRONG - manual mock implementation
+  // ❌ WRONG — manual mock implementation
   let wasCalled = false;
   let receivedArg: unknown = null;
-  const mockFunction = (arg: unknown) => {
-    wasCalled = true;
-    receivedArg = arg;
-  };
+  const mockFunction = (arg: unknown) => { wasCalled = true; receivedArg = arg; };
   someFunctionThatCallsMock(mockFunction);
   expect(wasCalled).toBe(true);
   expect(receivedArg).toBe(expectedArg);
-
-  // ❌ WRONG - manual promise mock
-  let resolveMock: ((value: unknown) => void) | null = null;
-  const mockFunction = () => new Promise((resolve) => {
-    resolveMock = resolve;
-  });
-  const promise = someFunctionThatCallsMock(mockFunction);
-  resolveMock && resolveMock(expectedValue);
-  const result = await promise;
-  expect(result).toBe(expectedValue);
   ```
 
 ## Mocking Guidelines

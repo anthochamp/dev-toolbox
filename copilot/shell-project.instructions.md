@@ -1,6 +1,6 @@
 ---
 name: Shell Script Project Guidelines
-description: Project structure, submodule conventions, and sh-essentials integration for shell script projects
+description: Rules and conventions for all shell script project work — directory structure, submodule conventions, and sh-essentials integration
 applyTo: "**/*.{sh,inc.sh}"
 ---
 

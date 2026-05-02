@@ -1,6 +1,6 @@
 ---
 name: ECMAScript Guidelines
-description: JavaScript and TypeScript language features, patterns, and Node.js best practices
+description: Rules and conventions for all JavaScript and TypeScript code — language features, async patterns, module system, and Node.js best practices
 applyTo: "**/*.{js,mjs,cjs,ts,tsx,mts,cts}"
 ---
 
@@ -15,8 +15,7 @@ applyTo: "**/*.{js,mjs,cjs,ts,tsx,mts,cts}"
 ### API Documentation
 
 - Document public APIs with JSDoc/TSDoc comments. Use the following tags consistently:
-  - `@param name` — describe each parameter
-  - `@returns` — describe the return value (always use `@returns`, never `@return`)
+  - `@returns` — always use `@returns`, never `@return`
   - `@throws {ErrorClass}` — only document when the thrown class is specific and semantically meaningful to callers (i.e., they might realistically catch it to differentiate it from other errors); do not document throws of generic `Error` or unavoidable runtime errors
   - `@internal` — mark items not intended for public use (even if exported for technical reasons)
   - `@deprecated` — mark deprecated APIs with a migration note
@@ -34,9 +33,6 @@ applyTo: "**/*.{js,mjs,cjs,ts,tsx,mts,cts}"
   ```typescript
   // ✅ CORRECT
   import { Semaphore } from './async/synchro/semaphore.js';
-
-  // ❌ WRONG — will fail at runtime in Node.js ESM
-  import { Semaphore } from './async/synchro/semaphore';
   ```
 
 - Only use default exports for modules exporting a single entity (e.g., a single class or function) OR if the module is a CJS-only module. Otherwise, always use named exports.
@@ -64,22 +60,12 @@ applyTo: "**/*.{js,mjs,cjs,ts,tsx,mts,cts}"
 - Use `Promise.allSettled` when all outcomes matter regardless of rejection; use `Promise.all` only when a single rejection should abort the whole batch.
 - Use `Promise.any` to resolve with the first fulfilled promise.
 - Use `Promise.prototype.finally` for cleanup that must run regardless of outcome.
-- Use `Promise.withResolvers()` when resolve/reject callbacks need to be accessed outside the constructor callback:
-
-  ```typescript
-  // ✅ CORRECT — clean deferred pattern
-  const { promise, resolve, reject } = Promise.withResolvers<void>();
-  store.push(resolve); // called later
-  await promise;
-
-  // ❌ AVOID — verbose manual extraction
-  let resolve!: () => void;
-  const promise = new Promise<void>((res) => { resolve = res; });
-  ```
+- Use `Promise.withResolvers()` to access resolve/reject outside the Promise constructor — avoids the verbose manual `let resolve!` extraction pattern.
 
 ### Collections & Objects
 
-- Prefer `Map` and `Set` for key-value stores and membership checks over plain objects and arrays.
+- Use `Set` instead of arrays for unique value collections — arrays require explicit runtime deduplication while `Set` enforces uniqueness structurally.
+- Use `Map` instead of plain objects for key-value stores with dynamic or non-string keys — plain objects work for static string-keyed records, but `Map` avoids prototype chain collisions and handles any key type cleanly.
 - Use `Object.fromEntries` to reconstruct an object from `Object.entries` output or from a `Map`.
 - Use `Object.hasOwn(obj, key)` instead of `obj.hasOwnProperty(key)` — safer with null-prototype objects.
 
@@ -102,29 +88,8 @@ applyTo: "**/*.{js,mjs,cjs,ts,tsx,mts,cts}"
 
 ### Cancellation
 
-- Use `AbortController` / `AbortSignal` for cooperative cancellation of async operations (fetch, streams, timers, custom async loops). Pass the signal through the call chain rather than using ad-hoc flags:
-
-  ```typescript
-  // ✅ CORRECT — pass AbortSignal through; check it in long-running loops
-  async function processItems(items: string[], signal: AbortSignal): Promise<void> {
-    for (const item of items) {
-      signal.throwIfAborted();
-      await processOne(item, { signal });
-    }
-  }
-
-  const controller = new AbortController();
-  setTimeout(() => controller.abort(), 5000);
-  await processItems(items, controller.signal);
-  ```
-
-- Use `signal.throwIfAborted()` inside loops to exit early; it throws a `DOMException` with `name === 'AbortError'`.
-- Use `AbortSignal.timeout(ms)` for one-shot timeout signals without managing a controller:
-
-  ```typescript
-  await fetch(url, { signal: AbortSignal.timeout(3000) });
-  ```
-
+- Use `AbortController` / `AbortSignal` for cooperative cancellation (fetch, streams, timers, async loops). Pass the signal through the call chain; call `signal.throwIfAborted()` inside long-running loops — it throws `DOMException` with `name === 'AbortError'`.
+- Use `AbortSignal.timeout(ms)` for one-shot timeout signals without managing a controller.
 - Use `AbortSignal.any([sig1, sig2])` to combine multiple signals (e.g., user cancel + timeout) into one.
 
 ### ESNext

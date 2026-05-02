@@ -1,6 +1,6 @@
 ---
 name: JavaScript Guidelines
-description: JavaScript and TypeScript naming conventions and linter tool patterns
+description: Rules and conventions for all JavaScript and TypeScript code — naming conventions, formatting rules, and linter patterns
 applyTo: "**/*.{js,mjs,cjs,ts,tsx,mts,cts}"
 ---
 
@@ -85,34 +85,11 @@ Use generic function/method names that do not describe their internal structure:
 ### Naming Examples
 
 ```typescript
-// ❌ BAD
-const a = 5
-const isPaginatable = a > 10
-const onItmClk = () => {}
-class MenuItem {
-  handleMenuItemClick() {} // duplicates context
-}
-
-// ✅ GOOD
-const postCount = 5
-const hasPagination = postCount > 10
-const onItemClick = () => {}
-class MenuItem {
-  handleClick() {} // reads as MenuItem.handleClick()
-}
-
-// ❌ BAD - context duplication
-const isProductsExist = productsCount > 0
-const areProductsPresent = productsCount > 0
-
-// ✅ GOOD - clear and concise
-const hasProducts = productsCount > 0
-
-// ❌ BAD - doesn't reflect expected result
+// ❌ BAD — name doesn't reflect expected result
 const isEnabled = itemCount > 3
 return <Button disabled={!isEnabled} />
 
-// ✅ GOOD - reflects expected result
+// ✅ GOOD
 const isDisabled = itemCount <= 3
 return <Button disabled={isDisabled} />
 ```
@@ -148,7 +125,4 @@ const value: any = result;
 ```typescript
 // ✅ CORRECT — single-line disable with justification on same line
 const value = result as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- dynamic reflection pattern
-
-// ❌ WRONG — block disable without re-enable in source files
-/* eslint-disable @typescript-eslint/no-explicit-any */
 ```

@@ -1,6 +1,6 @@
 ---
 name: Diátaxis Documentation Framework
-description: Generic Diátaxis principles (4 document types, writing styles, cross-referencing)
+description: Rules and conventions for all documentation work using the Diátaxis framework — tutorials, how-to guides, reference, and explanation writing styles
 applyTo: "**/docs/**/*.md"
 ---
 
