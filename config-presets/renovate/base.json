@@ -12,8 +12,7 @@
 		"mergeConfidence:all-badges",
 		"group:allNonMajor",
 		"group:allDigest",
-		"schedule:automergeWeekends",
-		"schedule:daily"
+		"schedule:automergeWeekends"
 	],
 	"labels": ["dependencies"],
 	"packageRules": [
