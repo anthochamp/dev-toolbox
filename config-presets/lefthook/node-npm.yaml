@@ -12,17 +12,39 @@ pre-commit:
         - "package-lock.lock"
       # scan the whole project (cf. https://github.com/microsoft/TypeScript/issues/27379)
       run: |
-        if npm run --json 2>/dev/null | jq -e '."tsc:check"' > /dev/null; then
+        if npm run --json 2>/dev/null | jq -e '."compile:check"' > /dev/null; then
+          npm run compile:check
+        elif npm run --json 2>/dev/null | jq -e '."tsc:check"' > /dev/null; then
           npm run tsc:check
         elif npm run --json 2>/dev/null | jq -e '."lint-ts"' > /dev/null; then
           npm run lint-ts
         else
           echo "No tsc check script found in package.json, skipping type checking"
         fi
-    biome:
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+    format-oxfmt:
       stage_fixed: true
-      run: npm exec -- biome check --write --error-on-warnings --no-errors-on-unmatched {staged_files}
+      run: |
+        if npm exec -- oxfmt --version >/dev/null 2>&1; then
+          npm exec -- oxfmt --no-error-on-unmatched-pattern -- {staged_files}
+        fi
+    lint-js:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx}"
+      stage_fixed: true
+      run: |
+        if npm exec -- biome --version >/dev/null 2>&1; then
+          npm exec -- biome check --write --error-on-warnings --no-errors-on-unmatched {staged_files}
+        elif npm exec -- oxlint --version >/dev/null 2>&1; then
+          npm exec -- oxlint {staged_files}
+        else
+          echo "Warning: Neither Biome nor Oxlint found in project, skipping JS/TS linting"
+        fi
+    lint-json:
+      glob: "*.{json,jsonc}"
+      stage_fixed: true
+      run: |
+        if npm exec -- biome --version >/dev/null 2>&1; then
+          npm exec -- biome check --write --error-on-warnings --no-errors-on-unmatched {staged_files}
+        fi
 
 pre-push:
   commands:

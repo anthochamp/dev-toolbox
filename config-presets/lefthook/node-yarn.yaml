@@ -12,17 +12,39 @@ pre-commit:
         - "yarn.lock"
       # scan the whole project (cf. https://github.com/microsoft/TypeScript/issues/27379)
       run: |
-        if yarn run --json 2>/dev/null | jq -e 'select(.name == "tsc:check")' > /dev/null; then
+        if yarn run --json 2>/dev/null | jq -e 'select(.name == "compile:check")' > /dev/null; then
+          yarn compile:check
+        elif yarn run --json 2>/dev/null | jq -e 'select(.name == "tsc:check")' > /dev/null; then
           yarn tsc:check
         elif yarn run --json 2>/dev/null | jq -e 'select(.name == "lint-ts")' > /dev/null; then
           yarn lint-ts
         else
           echo "No tsc check script found in package.json, skipping type checking"
         fi
-    biome:
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+    format-oxfmt:
       stage_fixed: true
-      run: yarn exec biome check --write --error-on-warnings --no-errors-on-unmatched {staged_files}
+      run: |
+        if yarn exec oxfmt --version >/dev/null 2>&1; then
+          yarn exec oxfmt --no-error-on-unmatched-pattern -- {staged_files}
+        fi
+    lint-js:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx}"
+      stage_fixed: true
+      run: |
+        if yarn exec biome --version >/dev/null 2>&1; then
+          yarn exec biome check --write --error-on-warnings --no-errors-on-unmatched {staged_files}
+        elif yarn exec oxlint --version >/dev/null 2>&1; then
+          yarn exec oxlint {staged_files}
+        else
+          echo "Warning: Neither Biome nor Oxlint found in project, skipping JS/TS linting"
+        fi
+    lint-json:
+      glob: "*.{json,jsonc}"
+      stage_fixed: true
+      run: |
+        if yarn exec biome --version >/dev/null 2>&1; then
+          yarn exec biome check --write --error-on-warnings --no-errors-on-unmatched {staged_files}
+        fi
 
 pre-push:
   commands:
